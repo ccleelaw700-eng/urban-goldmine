@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HKDSE English Writing 10-Min Daily Trainer</title>
+ 
+    <!-- Node Crypto Polyfill for Tailwind JIT -->
+    <script>
+      window.crypto = window.crypto || {};
+      if (!window.crypto.createHash) {
+        window.crypto.createHash = function () {
+          let data = '';
+          return {
+            update: function (str) { data += str; return this; },
+            digest: function () {
+              let hash = 5381;
+              for (let i = 0; i < data.length; i++) {
+                hash = ((hash << 5) + hash) + data.charCodeAt(i);
+              }
+              return (hash >>> 0).toString(16);
+            }
+          };
+        };
+      }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col gap-3">
+            <!-- Row 1: Icon + Title & Subtext -->
+            <div class="flex items-center gap-2.5 min-w-0 w-full">
+                <div class="p-2 bg-indigo-700 text-white rounded-lg shadow-sm shrink-0">
+                    <i data-lucide="zap" class="w-5 h-5"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <h1 class="font-bold text-base sm:text-lg text-slate-900 tracking-tight leading-tight">DSE 10-Min Daily Writing Trainer</h1>
+                    <span class="text-[10px] sm:text-xs text-indigo-600 font-semibold tracking-wide uppercase block">Ling 3.0 Flash VL Free AI + DSE Paper 2 Standard</span>
+                </div>
+            </div>
+            
+            <!-- Row 2: Action Buttons -->
+            <div class="flex items-center gap-2 sm:gap-3 text-sm font-medium w-full justify-start sm:justify-end flex-wrap">
+                <button id="btn-api-key" class="flex items-center gap-1.5 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 sm:px-3 py-1.5 rounded-lg border border-slate-200 transition-colors">
+                    <i data-lucide="key" class="w-3.5 h-3.5 text-slate-500"></i>
+                    <span id="api-key-status">API Settings</span>
+                </button>
+                <div class="flex items-center gap-1.5 text-amber-600 bg-amber-50 px-2.5 sm:px-3 py-1.5 rounded-full border border-amber-200 text-xs sm:text-sm">
+                    <i data-lucide="flame" class="w-4 h-4 fill-amber-500 text-amber-500"></i>
+                    <span>Streak: <strong id="streak-count">0</strong> Days</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Section -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left Column -->
+        <section class="lg:col-span-7 flex flex-col gap-4">
+            
+            <!-- Prompt Display -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <div class="flex items-center gap-2">
+                        <span id="prompt-tag" class="text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 rounded-md">10-Min Sprint</span>
+                        <span id="prompt-type" class="text-xs text-slate-400 font-mono">AI Generated Prompt</span>
+                    </div>
+
+                    <!-- Target Genre Selector -->
+                    <div class="flex items-center gap-1.5">
+                        <label for="genre-select" class="text-xs font-semibold text-slate-600 flex items-center gap-1">
+                            <i data-lucide="book-open" class="w-3.5 h-3.5 text-indigo-700"></i> Text Type:
+                        </label>
+                        <select id="genre-select" class="bg-slate-100 border border-slate-200 text-xs rounded-lg px-2 py-1 text-slate-800 font-medium focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer">
+                            <option value="Narrative / Descriptive" selected>1. Narrative / Descriptive</option>
+                            <option value="Argumentative / Persuasive">2. Argumentative / Persuasive</option>
+                            <option value="Expository / Informative">3. Expository / Informative</option>
+                            <option value="Formal / Business Communication (Letter / Report / Proposal)">4. Formal Letter / Report / Proposal</option>
+                            <option value="Article / Blog Post / Speech">5. Article / Blog Post / Speech</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between mb-2">
+                    <p id="prompt-display" class="text-base sm:text-lg font-semibold text-slate-800 leading-relaxed min-h-[3.5rem] flex items-center">
+                        Loading prompt...
+                    </p>
+                </div>
+
+                <div class="flex justify-between items-center mt-2 pt-2 border-t border-slate-100 text-xs text-slate-500">
+                    <div class="flex items-center gap-1.5">
+                        <i data-lucide="target" class="w-3.5 h-3.5 text-amber-500"></i>
+                        <span id="prompt-tip">Suggested length: 120–220 words. Focus on strong vocabulary, sentence structures, and domain-specific tone.</span>
+                    </div>
+                    <button id="btn-new-prompt" class="inline-flex items-center gap-1.5 text-xs font-medium text-indigo-700 hover:text-indigo-800 transition-colors bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-md border border-indigo-200">
+                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> New Prompt
+                    </button>
+                </div>
+            </div>
+
+            <!-- Timer -->
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="timer" class="w-5 h-5 text-indigo-700"></i>
+                    <span class="text-sm font-medium text-slate-600">Timer:</span>
+                    <select id="timer-select" class="bg-slate-100 border-none rounded-lg text-sm px-3 py-1.5 text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer font-semibold">
+                        <option value="5">5 Minutes (Sprint)</option>
+                        <option value="10" selected>10 Minutes (Standard Daily)</option>
+                        <option value="15">15 Minutes (Deep Polish)</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <div id="timer-display" class="font-mono text-2xl font-bold text-indigo-700 tracking-wider">10:00</div>
+                    <button id="btn-toggle-timer" class="flex items-center gap-1.5 bg-indigo-700 hover:bg-indigo-800 text-white font-medium text-sm px-4 py-2 rounded-lg transition-colors">
+                        <i data-lucide="play" class="w-4 h-4"></i>
+                        <span id="timer-btn-text">Start Timer</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Editor -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col flex-1 min-h-[320px]">
+                <textarea 
+                    id="editor" 
+                    placeholder="Write your micro-essay here... (Target: 120–220 words)" 
+                    class="w-full flex-1 p-5 rounded-t-2xl text-slate-800 text-base leading-relaxed resize-none focus:outline-none placeholder:text-slate-400 font-sans"
+                ></textarea>
+                
+                <div class="border-t border-slate-100 px-5 py-3 bg-slate-50 rounded-b-2xl flex items-center justify-between text-xs text-slate-500">
+                    <div class="flex items-center gap-3">
+                        <span>Word Count: <strong id="word-count" class="text-slate-900 text-sm font-bold">0</strong> words</span>
+                        <span id="word-status" class="hidden sm:inline-block px-2 py-0.5 rounded bg-slate-200 text-slate-600 font-medium">Target: 120–220 words</span>
+                        <button id="btn-clear-editor" class="inline-flex items-center gap-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 px-2 py-0.5 rounded transition-colors font-medium ml-1">
+                            <i data-lucide="rotate-ccw" class="w-3 h-3"></i> Clear Content
+                        </button>
+                    </div>
+                    <span id="save-status" class="text-slate-400">Auto-sync active</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Column -->
+        <aside class="lg:col-span-5 flex flex-col gap-4">
+            
+            <!-- AI Panel -->
+            <div class="bg-gradient-to-br from-purple-900 via-slate-900 to-slate-800 text-white p-5 rounded-2xl shadow-md border border-purple-500/30">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-2">
+                        <div class="p-1.5 bg-purple-500/20 text-purple-300 rounded-lg border border-purple-400/30">
+                            <i data-lucide="sparkles" class="w-4 h-4"></i>
+                        </div>
+                        <h2 class="font-bold text-base text-purple-100">Ling 3.0 Flash Examiner</h2>
+                    </div>
+                    <span class="text-[10px] bg-purple-500/30 text-purple-200 px-2 py-0.5 rounded border border-purple-400/30 font-mono">ling-3.0-flash-vl:free</span>
+                </div>
+                <p class="text-xs text-slate-300 leading-relaxed mb-4">
+                    Evaluates micro-writing against HKDSE English Paper 2 assessment criteria (21-mark scale conversion), or generates a Level 5** exemplar paragraph.
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <button id="btn-ai-grade" class="flex items-center justify-center gap-1.5 bg-purple-600 hover:bg-purple-500 text-white font-bold py-2.5 px-3 rounded-xl shadow-lg shadow-purple-600/30 transition-all text-xs disabled:opacity-50">
+                        <i data-lucide="cpu" class="w-4 h-4"></i>
+                        <span id="ai-btn-text">Ling AI Evaluation</span>
+                    </button>
+                    <button id="btn-ai-sample" class="flex items-center justify-center gap-1.5 bg-amber-600 hover:bg-amber-500 text-white font-bold py-2.5 px-3 rounded-xl shadow-lg shadow-amber-600/30 transition-all text-xs disabled:opacity-50">
+                        <i data-lucide="award" class="w-4 h-4"></i>
+                        <span id="ai-sample-btn-text">Generate 5** Sample</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Score Panel -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-sm">DSE Paper 2 Score (Max 21)</h3>
+                        <span class="text-[11px] text-slate-400">Content (7) + Language (7) + Organization (7)</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-[10px] text-slate-400 block uppercase font-mono">Predicted Level</span>
+                        <span id="predicted-grade" class="text-xl font-extrabold text-indigo-700">---</span>
+                    </div>
+                </div>
+
+                <div class="space-y-3.5">
+                    <div>
+                        <div class="flex justify-between text-xs font-semibold mb-1">
+                            <span class="text-slate-700">1. Content (7 Marks)</span>
+                            <span class="text-indigo-700"><span id="val-content">4</span> / 7</span>
+                        </div>
+                        <input type="range" id="score-content" min="0" max="7" value="4" class="w-full accent-indigo-700 bg-slate-200 h-1.5 rounded-lg cursor-pointer">
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-xs font-semibold mb-1">
+                            <span class="text-slate-700">2. Language & Vocabulary (7 Marks)</span>
+                            <span class="text-indigo-700"><span id="val-express">4</span> / 7</span>
+                        </div>
+                        <input type="range" id="score-express" min="0" max="7" value="4" class="w-full accent-indigo-700 bg-slate-200 h-1.5 rounded-lg cursor-pointer">
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-xs font-semibold mb-1">
+                            <span class="text-slate-700">3. Organization & Cohesion (7 Marks)</span>
+                            <span class="text-indigo-700"><span id="val-struct">4</span> / 7</span>
+                        </div>
+                        <input type="range" id="score-struct" min="0" max="7" value="4" class="w-full accent-indigo-700 bg-slate-200 h-1.5 rounded-lg cursor-pointer">
+                    </div>
+
+                    <div class="flex items-center justify-between pt-2 border-t border-slate-100 text-xs text-slate-600">
+                        <span>Language Accuracy Penalty:</span>
+                        <select id="penalty-words" class="bg-slate-100 border border-slate-200 rounded px-2 py-0.5 text-xs outline-none">
+                            <option value="0">Deduct 0 pts (Minor / No Errors)</option>
+                            <option value="1">Deduct 1 pt (Occasional Errors)</option>
+                            <option value="2">Deduct 2 pts (Frequent Errors)</option>
+                            <option value="3">Deduct 3 pts (Pervasive Errors)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Latest AI Comments Summary Container -->
+                <div id="ai-comments-container" class="mt-4 p-3 bg-purple-50 rounded-xl border border-purple-200 hidden">
+                    <div class="flex items-center gap-1.5 font-bold text-xs text-purple-900 mb-1">
+                        <i data-lucide="message-square" class="w-3.5 h-3.5 text-purple-600"></i> Ling AI Examiner's Feedback
+                    </div>
+                    <div id="ai-comments-summary" class="text-xs text-slate-700 leading-relaxed whitespace-pre-wrap"></div>
+                </div>
+
+                <div class="mt-4 p-3 bg-slate-900 text-white rounded-xl flex items-center justify-between">
+                    <div>
+                        <span class="text-[10px] text-slate-400 block">Total Score</span>
+                        <div class="text-2xl font-black text-amber-400 font-mono"><span id="total-score">12</span> <span class="text-xs text-slate-400 font-normal">/ 21 Marks</span></div>
+                    </div>
+                    <button id="btn-save" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs px-4 py-2.5 rounded-lg transition-colors shadow-sm">
+                        <i data-lucide="check-circle" class="w-4 h-4"></i> Save Daily Log
+                    </button>
+                </div>
+            </div>
+
+            <!-- History List -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col h-[260px]">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                        <i data-lucide="calendar" class="w-4 h-4 text-indigo-700"></i> Training History Archive
+                    </h3>
+                    <span id="history-count" class="text-xs font-semibold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">0 entries</span>
+                </div>
+
+                <div id="history-list" class="flex-1 overflow-y-auto custom-scrollbar space-y-2.5 pr-1"></div>
+            </div>
+        </aside>
+
+    </main>
+
+    <!-- Modal 1: Details View -->
+    <div id="modal-view" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-xl overflow-hidden">
+            <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span id="modal-grade" class="px-2 py-0.5 rounded text-xs font-bold bg-indigo-700 text-white">5**</span>
+                        <span id="modal-date" class="text-xs text-slate-400">2026-09-17</span>
+                    </div>
+                    <h3 id="modal-prompt" class="font-bold text-slate-800 text-base mt-1">Prompt...</h3>
+                </div>
+                <button id="btn-close-modal" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <div class="px-6 py-2.5 bg-indigo-50 border-b border-slate-100 flex justify-around text-xs text-slate-600 font-medium">
+                <div>Content: <strong id="modal-score-c" class="text-indigo-700">0</strong>/7</div>
+                <div>Language: <strong id="modal-score-e" class="text-indigo-700">0</strong>/7</div>
+                <div>Organization: <strong id="modal-score-s" class="text-indigo-700">0</strong>/7</div>
+                <div>Total: <strong id="modal-score-total" class="text-indigo-700">0</strong>/21</div>
+            </div>
+
+            <div id="modal-ai-feedback-container" class="p-4 bg-purple-50 border-b border-purple-100 text-xs text-slate-700 hidden space-y-2 max-h-48 overflow-y-auto">
+                <div class="font-bold text-purple-900 flex items-center gap-1.5">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5 text-purple-600"></i> Ling AI Detailed Feedback
+                </div>
+                <div id="modal-ai-feedback" class="leading-relaxed whitespace-pre-wrap text-slate-600"></div>
+            </div>
+
+            <div class="p-6 overflow-y-auto flex-1 text-slate-700 leading-relaxed whitespace-pre-wrap" id="modal-content"></div>
+            <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-between items-center text-xs text-slate-500">
+                <span id="modal-word-count">Total: 0 words</span>
+                <button id="btn-delete-entry" class="text-rose-500 hover:text-rose-700 flex items-center gap-1">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete Entry
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2: API Keys Input -->
+    <div id="modal-api" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl">
+            <h3 class="font-bold text-slate-900 text-lg mb-2 flex items-center gap-2">
+                <i data-lucide="key" class="w-5 h-5 text-purple-600"></i> Configure API Keys & Provider
+            </h3>
+            <p class="text-xs text-slate-500 leading-relaxed mb-4">
+                Keys are saved locally in your browser. Choose your preferred primary API provider below.
+            </p>
+            
+            <div class="space-y-4 mb-5">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">
+                        Active API Model Provider
+                    </label>
+                    <select id="select-api-provider" class="w-full p-2.5 bg-slate-100 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="openrouter">OpenRouter (Default)</option>
+                        <option value="mistral">Mistral AI</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
+                        <span>OpenRouter API Key</span>
+                        <span class="text-[10px] text-slate-400 font-normal">Primary Provider</span>
+                    </label>
+                    <input type="password" id="input-api-key" placeholder="sk-or-v1-..." class="w-full p-2.5 bg-slate-100 border border-slate-200 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-purple-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
+                        <span>Mistral AI Key</span>
+                        <span class="text-[10px] text-slate-400 font-normal">Fallback Provider</span>
+                    </label>
+                    <input type="password" id="input-mistral-key" placeholder="Mistral API key..." class="w-full p-2.5 bg-slate-100 border border-slate-200 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-purple-500">
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 text-xs">
+                <button id="btn-close-api" class="px-4 py-2 text-slate-500 hover:bg-slate-100 rounded-lg">Cancel</button>
+                <button id="btn-save-api" class="px-4 py-2 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 3: Sample Essay Display -->
+    <div id="modal-sample-essay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-xl overflow-hidden">
+            <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-amber-50">
+                <div class="flex items-center gap-2">
+                    <span class="p-1.5 bg-amber-600 text-white rounded-lg">
+                        <i data-lucide="award" class="w-4 h-4"></i>
+                    </span>
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-base">HKDSE Level 5** Exemplar Paragraph</h3>
+                        <span id="sample-genre-badge" class="text-xs text-amber-700 font-medium">Text Type: ---</span>
+                    </div>
+                </div>
+                <button id="btn-close-sample-modal" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="p-4 bg-slate-50 border-b border-slate-100 text-xs text-slate-600">
+                <div class="font-semibold text-slate-800 mb-0.5">Prompt:</div>
+                <p id="sample-prompt-text" class="text-slate-700 italic">---</p>
+            </div>
+
+            <div class="p-6 overflow-y-auto flex-1 text-slate-800 leading-relaxed whitespace-pre-wrap text-base" id="sample-essay-content">
+                Loading...
+            </div>
+
+            <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-between items-center text-xs">
+                <span id="sample-essay-wordcount" class="text-slate-500 font-mono">Word Count: 0 words</span>
+                <button id="btn-copy-sample" class="flex items-center gap-1.5 bg-amber-600 hover:bg-amber-700 text-white font-medium px-3.5 py-1.5 rounded-lg transition-colors">
+                    <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy Exemplar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS Logic -->
+    <script>
+        const FALLBACK_PROMPTS = {
+            "Narrative / Descriptive": {
+                type: "Narrative / Descriptive: Character & Setting Detail",
+                title: "\"Describe a dedicated elderly craftsman intensely focused on restoring an old heirloom in his dimly lit workshop.\" (120–200 words)",
+                tip: "Use sensory details, precise verbs, and vivid adjectives to evoke atmosphere."
+            },
+            "Argumentative / Persuasive": {
+                type: "Argumentative / Persuasive: Counter-Argument & Rebuttal",
+                title: "\"Write a persuasive body paragraph refuting the claim that remote learning diminishes the overall quality of education.\" (150–220 words)",
+                tip: "Acknowledge the opposing view, highlight its logical fallacy, and provide a strong counter-example."
+            },
+            "Expository / Informative": {
+                type: "Expository / Informative: Explaining a Cause and Effect",
+                title: "\"Explain two major reasons why fast fashion poses significant environmental threats to modern society.\" (120–200 words)",
+                tip: "Maintain a formal, objective tone and use clear transition words (e.g., consequently, furthermore)."
+            },
+            "Formal / Business Communication (Letter / Report / Proposal)": {
+                type: "Formal Communication: Problem & Solution Section",
+                title: "\"Write a paragraph in a formal proposal to your school principal suggesting measures to boost student mental health awareness.\" (130–220 words)",
+                tip: "Use formal signposts, polite modals (e.g., would recommend, should consider), and structured points."
+            },
+            "Article / Blog Post / Speech": {
+                type: "Article / Speech: Engaging Opening or Call to Action",
+                title: "\"Write an inspiring speech opening addressing teenagers on the importance of embracing failure as a stepping stone to success.\" (120–200 words)",
+                tip: "Engage the audience immediately using rhetorical questions, direct address, and impactful parallelism."
+            }
+        };
+
+        let entries = JSON.parse(localStorage.getItem('hkdse_eng_micro_entries') || '[]');
+        let openrouterApiKey = localStorage.getItem('openrouter_api_key') || '';
+        let mistralApiKey = localStorage.getItem('mistral_api_key') || '';
+        let preferredApiProvider = localStorage.getItem('preferred_api_provider') || 'openrouter';
+        let currentPromptObj = null;
+        let timerInterval = null;
+        let timeLeft = 600; // 10 mins default
+        let isTimerRunning = false;
+        let selectedEntryId = null;
+        let lastAiFeedback = "";
+
+        const PRIMARY_MODEL = "inclusionai/ling-3.0-flash-vl:free";
+        const FALLBACK_MODELS = [
+            "google/gemini-2.0-flash-lite-preview-02-05:free",
+            "google/gemma-2-9b-it:free"
+        ];
+
+        // DOM Elements
+        const promptTag = document.getElementById('prompt-tag');
+        const promptType = document.getElementById('prompt-type');
+        const promptDisplay = document.getElementById('prompt-display');
+        const promptTip = document.getElementById('prompt-tip');
+        const btnNewPrompt = document.getElementById('btn-new-prompt');
+        const genreSelect = document.getElementById('genre-select');
+
+        const timerSelect = document.getElementById('timer-select');
+        const timerDisplay = document.getElementById('timer-display');
+        const btnToggleTimer = document.getElementById('btn-toggle-timer');
+        const timerBtnText = document.getElementById('timer-btn-text');
+
+        const editor = document.getElementById('editor');
+        const wordCountDisplay = document.getElementById('word-count');
+        const wordStatus = document.getElementById('word-status');
+        const btnClearEditor = document.getElementById('btn-clear-editor');
+        const saveStatus = document.getElementById('save-status');
+        const btnSave = document.getElementById('btn-save');
+
+        const btnAiGrade = document.getElementById('btn-ai-grade');
+        const aiBtnText = document.getElementById('ai-btn-text');
+        const btnAiSample = document.getElementById('btn-ai-sample');
+        const aiSampleBtnText = document.getElementById('ai-sample-btn-text');
+
+        const btnApiKey = document.getElementById('btn-api-key');
+        const apiKeyStatus = document.getElementById('api-key-status');
+
+        const scoreContent = document.getElementById('score-content');
+        const scoreExpress = document.getElementById('score-express');
+        const scoreStruct = document.getElementById('score-struct');
+        const penaltyWords = document.getElementById('penalty-words');
+
+        const valContent = document.getElementById('val-content');
+        const valExpress = document.getElementById('val-express');
+        const valStruct = document.getElementById('val-struct');
+        const totalScoreDisplay = document.getElementById('total-score');
+        const predictedGradeDisplay = document.getElementById('predicted-grade');
+
+        const aiCommentsContainer = document.getElementById('ai-comments-container');
+        const aiCommentsSummary = document.getElementById('ai-comments-summary');
+
+        const historyList = document.getElementById('history-list');
+        const historyCount = document.getElementById('history-count');
+        const streakCountDisplay = document.getElementById('streak-count');
+
+        const modalView = document.getElementById('modal-view');
+        const modalGrade = document.getElementById('modal-grade');
+        const modalDate = document.getElementById('modal-date');
+        const modalPrompt = document.getElementById('modal-prompt');
+        const modalContent = document.getElementById('modal-content');
+        const modalWordCount = document.getElementById('modal-word-count');
+        const modalScoreC = document.getElementById('modal-score-c');
+        const modalScoreE = document.getElementById('modal-score-e');
+        const modalScoreS = document.getElementById('modal-score-s');
+        const modalScoreTotal = document.getElementById('modal-score-total');
+        const modalAiFeedbackContainer = document.getElementById('modal-ai-feedback-container');
+        const modalAiFeedback = document.getElementById('modal-ai-feedback');
+        const btnCloseModal = document.getElementById('btn-close-modal');
+        const btnDeleteEntry = document.getElementById('btn-delete-entry');
+
+        const modalApi = document.getElementById('modal-api');
+        const selectApiProvider = document.getElementById('select-api-provider');
+        const inputApiKey = document.getElementById('input-api-key');
+        const inputMistralKey = document.getElementById('input-mistral-key');
+        const btnCloseApi = document.getElementById('btn-close-api');
+        const btnSaveApi = document.getElementById('btn-save-api');
+
+        const modalSampleEssay = document.getElementById('modal-sample-essay');
+        const sampleGenreBadge = document.getElementById('sample-genre-badge');
+        const samplePromptText = document.getElementById('sample-prompt-text');
+        const sampleEssayContent = document.getElementById('sample-essay-content');
+        const sampleEssayWordcount = document.getElementById('sample-essay-wordcount');
+        const btnCloseSampleModal = document.getElementById('btn-close-sample-modal');
+        const btnCopySample = document.getElementById('btn-copy-sample');
+
+        function init() {
+            lucide.createIcons();
+            getAiGeneratedPrompt();
+            updateTimerDisplay();
+            calculateDseScore();
+            renderHistory();
+            updateStats();
+            updateApiKeyUI();
+
+            editor.addEventListener('input', () => {
+                updateWordCount();
+                saveStatus.textContent = "Typing...";
+                setTimeout(() => { saveStatus.textContent = "Auto-sync active"; }, 1000);
+            });
+
+            btnClearEditor.addEventListener('click', () => {
+                if (!editor.value.trim()) return;
+                if (confirm("Are you sure you want to clear your current text?")) {
+                    editor.value = "";
+                    lastAiFeedback = "";
+                    aiCommentsContainer.classList.add('hidden');
+                    updateWordCount();
+                    saveStatus.textContent = "Content cleared";
+                    setTimeout(() => { saveStatus.textContent = "Auto-sync active"; }, 1500);
+                }
+            });
+
+            [scoreContent, scoreExpress, scoreStruct, penaltyWords].forEach(el => {
+                el.addEventListener('input', calculateDseScore);
+            });
+
+            genreSelect.addEventListener('change', () => {
+                getAiGeneratedPrompt();
+            });
+        }
+
+        function updateApiKeyUI() {
+            const activeProviderLabel = preferredApiProvider === 'mistral' ? 'Mistral' : 'OpenRouter';
+            if ((preferredApiProvider === 'openrouter' && openrouterApiKey) || (preferredApiProvider === 'mistral' && mistralApiKey)) {
+                apiKeyStatus.textContent = activeProviderLabel + " Active";
+                btnApiKey.classList.replace('bg-slate-100', 'bg-emerald-50');
+                btnApiKey.classList.replace('text-slate-700', 'text-emerald-700');
+            } else {
+                apiKeyStatus.textContent = "Set API Keys";
+                btnApiKey.classList.replace('bg-emerald-50', 'bg-slate-100');
+                btnApiKey.classList.replace('text-emerald-700', 'text-slate-700');
+            }
+        }
+
+        // Feature 1: AI Prompt Generation based on Selected Text Type
+        async function getAiGeneratedPrompt() {
+            const selectedGenre = genreSelect.value;
+
+            if (!openrouterApiKey && !mistralApiKey) {
+                const fallback = FALLBACK_PROMPTS[selectedGenre] || FALLBACK_PROMPTS["Narrative / Descriptive"];
+                currentPromptObj = fallback;
+                promptType.textContent = fallback.type;
+                promptDisplay.textContent = fallback.title;
+                promptTip.textContent = "Writing Advice: " + fallback.tip;
+                return;
+            }
+
+            promptDisplay.textContent = "✨ Ling AI is generating a prompt for \"" + selectedGenre + "\"...";
+            btnNewPrompt.disabled = true;
+
+            const systemInstruction = "You are an expert HKDSE English Language Paper 2 examiner and teacher.\n" +
+                "Generate a high-quality 10-minute micro-writing task (120–220 words) tailored to the specified text type.\n" +
+                "Output STRICTLY valid JSON without markdown formatting blocks: \n" +
+                "{\n" +
+                "  \"type\": \"" + selectedGenre + "\",\n" +
+                "  \"title\": \"\\\"Prompt content...\\\" (120-200 words)\",\n" +
+                "  \"tip\": \"Specific guidance on vocabulary, tone, and grammar for this text type...\"\n" +
+                "}";
+
+            const userPrompt = "Generate an HKDSE English Paper 2 sprint prompt for text type: \"" + selectedGenre + "\".";
+
+            try {
+                const rawText = await fetchOpenRouterAPI(PRIMARY_MODEL, systemInstruction, userPrompt);
+                let jsonCandidate = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+                const match = jsonCandidate.match(/\{[\s\S]*\}/);
+                if (match) jsonCandidate = match[0];
+				const cleanJsonString = jsonCandidate.replace(/\u00a0/g, ' ');
+				const sanitizedString = cleanJsonString.replace(/\r?\n/g, '');
+
+
+				console.log(sanitizedString);
+                const aiPrompt = JSON.parse(sanitizedString);
+
+                currentPromptObj = {
+                    type: aiPrompt.type || selectedGenre,
+                    title: aiPrompt.title || "Unable to parse prompt text.",
+                    tip: aiPrompt.tip || "Focus on language accuracy and cohesive structure."
+                };
+
+                promptType.textContent = currentPromptObj.type;
+                promptDisplay.textContent = currentPromptObj.title;
+                promptTip.textContent = "Writing Advice: " + currentPromptObj.tip;
+
+            } catch (err) {
+                console.warn("AI Prompt generation failed, falling back to offline defaults:", err);
+                const fallback = FALLBACK_PROMPTS[selectedGenre] || FALLBACK_PROMPTS["Narrative / Descriptive"];
+                currentPromptObj = fallback;
+                promptType.textContent = fallback.type;
+                promptDisplay.textContent = fallback.title;
+                promptTip.textContent = "Writing Advice: " + fallback.tip;
+            } finally {
+                btnNewPrompt.disabled = false;
+            }
+        }
+
+        function calculateDseScore() {
+            const c = parseInt(scoreContent.value);
+            const e = parseInt(scoreExpress.value);
+            const s = parseInt(scoreStruct.value);
+            const p = parseInt(penaltyWords.value);
+
+            valContent.textContent = c;
+            valExpress.textContent = e;
+            valStruct.textContent = s;
+
+            let total = c + e + s - p;
+            if (total < 0) total = 0;
+            totalScoreDisplay.textContent = total;
+
+            let grade = "1";
+            if (total >= 19) grade = "5**";
+            else if (total >= 17) grade = "5*";
+            else if (total >= 15) grade = "5";
+            else if (total >= 12) grade = "4";
+            else if (total >= 9) grade = "3";
+            else if (total >= 6) grade = "2";
+
+            predictedGradeDisplay.textContent = grade;
+            return { c, e, s, p, total, grade };
+        }
+
+        async function callOpenRouter(modelName, systemInstruction, userPrompt) {
+            const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": "Bearer " + openrouterApiKey,
+                    "Content-Type": "application/json",
+                    "HTTP-Referer": window.location.href,
+                    "X-Title": "DSE English 10Min Micro Writing"
+                },
+                body: JSON.stringify({
+                    model: modelName,
+                    messages: [
+                        { role: "system", content: systemInstruction },
+                        { role: "user", content: userPrompt }
+                    ],
+                    temperature: 0.3
+                })
+            });
+
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                throw new Error(errData.error?.message || "HTTP Status: " + response.status);
+            }
+
+            const data = await response.json();
+            return data.choices[0].message.content.trim();
+        }
+
+        async function callMistral(systemInstruction, userPrompt) {
+            const mistralResponse = await fetch("https://api.mistral.ai/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": "Bearer " + mistralApiKey,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    model: "mistral-tiny-latest",
+                    messages: [
+                        { role: "system", content: systemInstruction },
+                        { role: "user", content: userPrompt }
+                    ],
+                    temperature: 0.3
+                })
+            });
+
+            if (!mistralResponse.ok) {
+                const mistralErrData = await mistralResponse.json().catch(() => ({}));
+                throw new Error(mistralErrData.error?.message || "Mistral HTTP Status: " + mistralResponse.status);
+            }
+
+            const mistralData = await mistralResponse.json();
+            return mistralData.choices[0].message.content.trim();
+        }
+
+        async function fetchOpenRouterAPI(modelName, systemInstruction, userPrompt) {
+            if (preferredApiProvider === 'mistral') {
+                if (mistralApiKey) {
+                    try {
+                        return await callMistral(systemInstruction, userPrompt);
+                    } catch (mistralErr) {
+                        console.warn("Mistral API call failed, attempting fallback to OpenRouter API:", mistralErr);
+                        if (!openrouterApiKey) throw mistralErr;
+                    }
+                }
+                if (openrouterApiKey) {
+                    return await callOpenRouter(modelName, systemInstruction, userPrompt);
+                }
+            } else {
+                if (openrouterApiKey) {
+                    try {
+                        return await callOpenRouter(modelName, systemInstruction, userPrompt);
+                    } catch (openRouterErr) {
+                        console.warn("OpenRouter API call failed, attempting fallback to Mistral API:", openRouterErr);
+                        if (!mistralApiKey) throw openRouterErr;
+                    }
+                }
+                if (mistralApiKey) {
+                    return await callMistral(systemInstruction, userPrompt);
+                }
+            }
+
+            throw new Error("No valid API key provided.");
+        }
+
+        // Helper to safely format string, array, or object values from AI JSON output
+        function formatAiText(val) {
+            if (!val) return 'N/A';
+            if (Array.isArray(val)) {
+                return '<ul class="list-disc pl-4 mt-1 space-y-0.5">' + 
+                    val.map(item => '<li>' + (typeof item === 'object' ? JSON.stringify(item) : item) + '</li>').join('') + 
+                    '</ul>';
+            }
+            if (typeof val === 'object') {
+                return Object.entries(val).map(([k, v]) => `<div><strong>${k}:</strong> ${v}</div>`).join('');
+            }
+            return val;
+        }
+
+        // Feature 2: Upgraded AI Grading System based on HKDSE English Paper 2 Standards (7/7/7)
+        async function runOpenRouterGrading() {
+            if (!openrouterApiKey && !mistralApiKey) {
+                alert("Please configure an OpenRouter or Mistral API Key first!");
+                modalApi.classList.remove('hidden');
+                return;
+            }
+
+            const content = editor.value.trim();
+            if (!content) {
+                alert("Please enter your writing content before AI evaluation!");
+                return;
+            }
+
+            const currentGenre = genreSelect.value;
+
+            btnAiGrade.disabled = true;
+            aiBtnText.textContent = "Ling AI Evaluating...";
+
+            const systemInstruction = "You are a strict, experienced HKDSE English Language Paper 2 marker and tutor.\n" +
+                "The student has completed a 10-minute micro-writing task (120–220 words) under text type: \"" + currentGenre + "\".\n" +
+                "Evaluate the submission according to the official HKDSE English Paper 2 assessment criteria (Content: 7 marks, Language: 7 marks, Organization: 7 marks).\n\n" +
+                "Output STRICTLY valid JSON without markdown blocks: \n" +
+                "{\n" +
+                "  \"contentScore\": 5,\n" +
+                "  \"expressScore\": 5,\n" +
+                "  \"structScore\": 4,\n" +
+                "  \"typoPenalty\": 0,\n" +
+                "  \"overallComment\": \"Current predicted level and key gaps to Level 5**...\",\n" +
+                "  \"strengths\": \"Highlight impressive sentence structures, advanced vocabulary, or logical flow...\",\n" +
+                "  \"weaknesses\": \"Actionable tips to elevate tone, grammar, or word choice...\",\n" +
+                "  \"exemplarRewrite\": \"Pick a sentence from student's piece and rewrite it into a Level 5** sentence...\",\n" +
+                "  \"typosFound\": \"Highlight grammatical mistakes, awkward phrasing, or spelling slips...\"\n" +
+                "}";
+
+            const userPrompt = "[Text Type]: " + currentGenre + "\n[10-Min Prompt]: " + (currentPromptObj ? currentPromptObj.title : '') + "\n[Student Submission]:\n" + content;
+
+            let rawText = "";
+            let usedModel = PRIMARY_MODEL;
+
+            try {
+                try {
+                    rawText = await fetchOpenRouterAPI(PRIMARY_MODEL, systemInstruction, userPrompt);
+                } catch (primaryErr) {
+                    console.warn("Primary model failed, trying fallback:", primaryErr);
+                    let success = false;
+                    for (const fallbackModel of FALLBACK_MODELS) {
+                        try {
+                            aiBtnText.textContent = "Trying fallback model...";
+                            rawText = await fetchOpenRouterAPI(fallbackModel, systemInstruction, userPrompt);
+                            usedModel = fallbackModel;
+                            success = true;
+                            break;
+                        } catch (fallbackErr) {
+                            console.warn("Fallback model failed:", fallbackErr);
+                        }
+                    }
+                    if (!success) throw primaryErr;
+                }
+
+                let jsonCandidate = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+                const match = jsonCandidate.match(/\{[\s\S]*\}/);
+                if (match) jsonCandidate = match[0];
+				const cleanJsonString = jsonCandidate.replace(/\u00a0/g, ' ');
+				
+				const sanitizedString = cleanJsonString.replace(/\r?\n/g, '');
+
+                const aiResult = JSON.parse(sanitizedString);
+
+                scoreContent.value = Math.min(7, Math.max(0, parseInt(aiResult.contentScore) || 0));
+                scoreExpress.value = Math.min(7, Math.max(0, parseInt(aiResult.expressScore) || 0));
+                scoreStruct.value = Math.min(7, Math.max(0, parseInt(aiResult.structScore) || 0));
+                penaltyWords.value = Math.min(3, Math.max(0, parseInt(aiResult.typoPenalty) || 0));
+
+                calculateDseScore();
+
+                lastAiFeedback = "【Text Type】" + currentGenre + " | 【Model】" + usedModel + "\n\n" +
+                    "📌 " + (aiResult.overallComment || 'N/A') + "\n\n" +
+                    "✨ " + (aiResult.strengths || 'N/A') + "\n\n" +
+                    "💡 " + (aiResult.weaknesses || 'N/A') + "\n\n" +
+                    "🚀 " + (aiResult.exemplarRewrite || 'N/A') + "\n\n" +
+                    "✍️ " + (aiResult.typosFound || 'N/A');
+
+				// Updated DOM insertion
+				aiCommentsSummary.innerHTML = 
+					'<div class="space-y-2 text-xs leading-relaxed">' +
+						'<div><strong class="text-purple-900 block font-semibold">📌 Examiner Summary (' + currentGenre + '):</strong>' + formatAiText(aiResult.overallComment) + '</div>' +
+						'<div><strong class="text-emerald-800 block font-semibold">✨ Key Strengths:</strong>' + formatAiText(aiResult.strengths) + '</div>' +
+						'<div><strong class="text-amber-800 block font-semibold">💡 Level 5** Breakthrough Tips:</strong>' + formatAiText(aiResult.weaknesses) + '</div>' +
+						'<div class="p-2 bg-purple-100/70 border border-purple-200 rounded-lg"><strong class="text-purple-950 block font-bold mb-0.5">🚀 Level 5** Sentence Upgrade:</strong>' + formatAiText(aiResult.exemplarRewrite) + '</div>' +
+						'<div><strong class="text-slate-700 block font-semibold">✍️ Grammar & Expression Edits:</strong>' + formatAiText(aiResult.typosFound) + '</div>' +
+					'</div>';
+
+                aiCommentsContainer.classList.remove('hidden');
+
+                alert("🎉 AI Evaluation Complete! Feedback & Level 5** upgrades generated.\nPredicted Grade: Level " + predictedGradeDisplay.textContent + " (" + totalScoreDisplay.textContent + "/21 Marks)");
+
+            } catch (err) {
+                console.error("Grading Error:", err);
+                alert("AI Evaluation Error: " + err.message);
+            } finally {
+                btnAiGrade.disabled = false;
+                aiBtnText.textContent = "Ling AI Evaluation";
+            }
+        }
+
+        // Feature 3: Generate 5** Sample Essay Paragraph
+        async function generateSampleEssay() {
+            if (!openrouterApiKey && !mistralApiKey) {
+                alert("Please configure an OpenRouter or Mistral API Key first!");
+                modalApi.classList.remove('hidden');
+                return;
+            }
+
+            const currentGenre = genreSelect.value;
+            const promptTitle = currentPromptObj ? currentPromptObj.title : "10-Min Micro Writing Prompt";
+
+            btnAiSample.disabled = true;
+            aiSampleBtnText.textContent = "Generating Sample...";
+
+            sampleGenreBadge.textContent = "Text Type: " + currentGenre;
+            samplePromptText.textContent = promptTitle;
+            sampleEssayContent.textContent = "✨ Ling AI is composing a top-tier Level 5** micro writing sample...";
+            modalSampleEssay.classList.remove('hidden');
+
+            const systemInstruction = "You are a top HKDSE English Paper 2 tutor who consistently produces the highest level 5 model essays.\n" +
+                "Write an exemplary micro-writing passage (approx. 150–300 words) based on the given prompt and text type (" + currentGenre + ").\n" +
+                "Requirements:\n" +
+                "1. Demonstrate sophisticated vocabulary, natural sentence variety, and flawless grammar.\n" +
+                "2. Strictly adhere to the conventions and tone of " + currentGenre + ".\n" +
+                "3. Provide the sample directly (you may append 1-2 bullet points explaining key vocabulary/devices used).";
+
+            const userPrompt = "[Target Text Type]: " + currentGenre + "\n[Prompt]: " + promptTitle;
+
+            try {
+                let rawText = "";
+                try {
+                    rawText = await fetchOpenRouterAPI(PRIMARY_MODEL, systemInstruction, userPrompt);
+                } catch (primaryErr) {
+                    console.warn("Primary model failed for sample essay, trying fallback:", primaryErr);
+                    let success = false;
+                    for (const fallbackModel of FALLBACK_MODELS) {
+                        try {
+                            rawText = await fetchOpenRouterAPI(fallbackModel, systemInstruction, userPrompt);
+                            success = true;
+                            break;
+                        } catch (fallbackErr) {
+                            console.warn("Fallback failed:", fallbackErr);
+                        }
+                    }
+                    if (!success) throw primaryErr;
+                }
+
+                sampleEssayContent.textContent = rawText;
+
+                const words = rawText.trim().split(/\s+/).filter(w => w.length > 0).length;
+                sampleEssayWordcount.textContent = "Word Count: " + words + " words";
+
+            } catch (err) {
+                console.error("Sample Generation Error:", err);
+                sampleEssayContent.textContent = "❌ Failed to generate sample: " + err.message;
+            } finally {
+                btnAiSample.disabled = false;
+                aiSampleBtnText.textContent = "Generate 5** Sample";
+            }
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = minutes.toString().padStart(2, '0') + ":" + seconds.toString().padStart(2, '0');
+        }
+
+        function toggleTimer() {
+            if (isTimerRunning) {
+                clearInterval(timerInterval);
+                isTimerRunning = false;
+                timerBtnText.textContent = "Resume";
+                btnToggleTimer.classList.replace('bg-amber-600', 'bg-indigo-700');
+            } else {
+                isTimerRunning = true;
+                timerBtnText.textContent = "Pause";
+                btnToggleTimer.classList.replace('bg-indigo-700', 'bg-amber-600');
+                
+                timerInterval = setInterval(() => {
+                    if (timeLeft > 0) {
+                        timeLeft--;
+                        updateTimerDisplay();
+                    } else {
+                        clearInterval(timerInterval);
+                        isTimerRunning = false;
+                        alert("⏰ Time's up for your 10-minute sprint! Run AI Evaluation or save your entry.");
+                        timerBtnText.textContent = "Reset Timer";
+                    }
+                }, 1000);
+            }
+            lucide.createIcons();
+        }
+
+        timerSelect.addEventListener('change', (e) => {
+            if (!isTimerRunning) {
+                timeLeft = parseInt(e.target.value) * 60;
+                updateTimerDisplay();
+            }
+        });
+
+        function updateWordCount() {
+            const text = editor.value.trim();
+            if (!text) {
+                wordCountDisplay.textContent = 0;
+                wordStatus.textContent = "Target: 120–220 words";
+                wordStatus.className = "hidden sm:inline-block px-2 py-0.5 rounded bg-slate-200 text-slate-600 font-medium";
+                return 0;
+            }
+            const total = text.split(/\s+/).filter(w => w.length > 0).length;
+            
+            wordCountDisplay.textContent = total;
+
+            if (total < 100) {
+                wordStatus.textContent = "Below 100-word threshold";
+                wordStatus.className = "hidden sm:inline-block px-2 py-0.5 rounded bg-amber-100 text-amber-700 font-medium";
+            } else if (total >= 100 && total <= 250) {
+                wordStatus.textContent = "Optimal length for 10-min sprint";
+                wordStatus.className = "hidden sm:inline-block px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 font-medium";
+            } else {
+                wordStatus.textContent = "Above target length (consider concise editing)";
+                wordStatus.className = "hidden sm:inline-block px-2 py-0.5 rounded bg-blue-100 text-blue-700 font-medium";
+            }
+
+            return total;
+        }
+
+        function saveEntry() {
+            const content = editor.value.trim();
+            if (!content) {
+                alert("Please write something before saving your practice log!");
+                return;
+            }
+
+            const scoreData = calculateDseScore();
+
+            const newEntry = {
+                id: Date.now(),
+                date: new Date().toISOString().split('T')[0],
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                genre: genreSelect.value,
+                prompt: currentPromptObj ? currentPromptObj.title : '',
+                content: content,
+                words: updateWordCount(),
+                score: scoreData,
+                aiFeedback: lastAiFeedback
+            };
+
+            entries.unshift(newEntry);
+            localStorage.setItem('hkdse_eng_micro_entries', JSON.stringify(entries));
+
+            editor.value = "";
+            lastAiFeedback = "";
+            aiCommentsContainer.classList.add('hidden');
+            updateWordCount();
+            saveStatus.textContent = "Saved successfully!";
+            
+            if(isTimerRunning) toggleTimer();
+            timeLeft = parseInt(timerSelect.value) * 60;
+            updateTimerDisplay();
+
+            renderHistory();
+            updateStats();
+            getAiGeneratedPrompt();
+
+            alert("🔥 Daily practice logged! Predicted Grade: Level " + scoreData.grade + " (" + scoreData.total + "/21 Marks)");
+        }
+
+        function renderHistory() {
+            historyList.innerHTML = "";
+            historyCount.textContent = entries.length + (entries.length === 1 ? " entry" : " entries");
+
+            if (entries.length === 0) {
+                historyList.innerHTML = '<div class="h-full flex flex-col items-center justify-center text-slate-400 py-6"><i data-lucide="award" class="w-8 h-8 mb-1 opacity-40"></i><p class="text-xs">No training records yet</p></div>';
+                lucide.createIcons();
+                return;
+            }
+
+            entries.forEach(entry => {
+                const card = document.createElement('div');
+                card.className = "p-2.5 bg-slate-50 hover:bg-slate-100/80 rounded-xl border border-slate-200 cursor-pointer transition-all group";
+                card.onclick = () => openModal(entry.id);
+
+                const genreLabel = entry.genre ? '<span class="text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded font-medium mr-1 truncate max-w-[110px] inline-block align-bottom">' + entry.genre + '</span>' : '';
+
+                card.innerHTML = 
+                    '<div class="flex justify-between items-center mb-1 text-xs">' +
+                        '<div class="flex items-center overflow-hidden mr-2">' + genreLabel + '<span class="text-slate-400 text-[11px] shrink-0">' + entry.date + '</span></div>' +
+                        '<div class="flex items-center gap-1.5 shrink-0">' +
+                            (entry.aiFeedback ? '<span class="text-[10px] bg-purple-50 text-purple-600 px-1 rounded font-medium">AI Feedback</span>' : '') +
+                            '<span class="font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200 text-[11px]">Level ' + entry.score.grade + '</span>' +
+                            '<span class="font-mono text-slate-500 text-[11px]">' + entry.score.total + '/21</span>' +
+                        '</div>' +
+                    '</div>' +
+                    '<h4 class="font-bold text-slate-800 text-xs truncate group-hover:text-indigo-700 transition-colors">' + entry.prompt + '</h4>';
+                historyList.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        function updateStats() {
+            if (entries.length === 0) {
+                streakCountDisplay.textContent = 0;
+                return;
+            }
+
+            const uniqueDates = [...new Set(entries.map(e => e.date))].sort().reverse();
+            const today = new Date().toISOString().split('T')[0];
+            const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+
+            let streak = 0;
+            let checkDate = uniqueDates[0] === today ? today : (uniqueDates[0] === yesterday ? yesterday : null);
+
+            if (checkDate) {
+                let currentDate = new Date(checkDate);
+                while (true) {
+                    const dateStr = currentDate.toISOString().split('T')[0];
+                    if (uniqueDates.includes(dateStr)) {
+                        streak++;
+                        currentDate.setDate(currentDate.getDate() - 1);
+                    } else { break; }
+                }
+            }
+            streakCountDisplay.textContent = streak;
+        }
+
+        function openModal(id) {
+            const entry = entries.find(e => e.id === id);
+            if (!entry) return;
+
+            selectedEntryId = id;
+            modalGrade.textContent = "Predicted: Level " + entry.score.grade;
+            modalDate.textContent = (entry.genre ? "[" + entry.genre + "] " : "") + entry.date + " " + entry.time;
+            modalPrompt.textContent = entry.prompt;
+            modalContent.textContent = entry.content;
+            modalWordCount.textContent = "Total Word Count: " + entry.words + " words";
+
+            modalScoreC.textContent = entry.score.c;
+            modalScoreE.textContent = entry.score.e;
+            modalScoreS.textContent = entry.score.s;
+            modalScoreTotal.textContent = entry.score.total;
+
+            if (entry.aiFeedback) {
+                modalAiFeedback.textContent = entry.aiFeedback;
+                modalAiFeedbackContainer.classList.remove('hidden');
+            } else {
+                modalAiFeedbackContainer.classList.add('hidden');
+            }
+
+            modalView.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            modalView.classList.add('hidden');
+            selectedEntryId = null;
+        }
+
+        function deleteEntry() {
+            if (!selectedEntryId) return;
+            if (confirm("Are you sure you want to delete this log entry?")) {
+                entries = entries.filter(e => e.id !== selectedEntryId);
+                localStorage.setItem('hkdse_eng_micro_entries', JSON.stringify(entries));
+                renderHistory();
+                updateStats();
+                closeModal();
+            }
+        }
+
+        btnNewPrompt.addEventListener('click', getAiGeneratedPrompt);
+        btnToggleTimer.addEventListener('click', toggleTimer);
+        btnSave.addEventListener('click', saveEntry);
+        btnAiGrade.addEventListener('click', runOpenRouterGrading);
+        btnAiSample.addEventListener('click', generateSampleEssay);
+
+        btnCloseModal.addEventListener('click', closeModal);
+        btnDeleteEntry.addEventListener('click', deleteEntry);
+
+        btnCloseSampleModal.addEventListener('click', () => {
+            modalSampleEssay.classList.add('hidden');
+        });
+
+        btnCopySample.addEventListener('click', () => {
+            const textToCopy = sampleEssayContent.textContent;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                alert("5** exemplar paragraph copied to clipboard!");
+            }).catch(err => {
+                console.error("Copy failed:", err);
+            });
+        });
+
+        btnApiKey.addEventListener('click', () => {
+            selectApiProvider.value = preferredApiProvider;
+            inputApiKey.value = openrouterApiKey;
+            inputMistralKey.value = mistralApiKey;
+            modalApi.classList.remove('hidden');
+        });
+        btnCloseApi.addEventListener('click', () => modalApi.classList.add('hidden'));
+        btnSaveApi.addEventListener('click', () => {
+            preferredApiProvider = selectApiProvider.value;
+            openrouterApiKey = inputApiKey.value.trim();
+            mistralApiKey = inputMistralKey.value.trim();
+            localStorage.setItem('preferred_api_provider', preferredApiProvider);
+            localStorage.setItem('openrouter_api_key', openrouterApiKey);
+            localStorage.setItem('mistral_api_key', mistralApiKey);
+            updateApiKeyUI();
+            modalApi.classList.add('hidden');
+            getAiGeneratedPrompt();
+            alert("API settings and provider saved successfully!");
+        });
+
+        modalView.addEventListener('click', (e) => {
+            if (e.target === modalView) closeModal();
+        });
+
+        modalSampleEssay.addEventListener('click', (e) => {
+            if (e.target === modalSampleEssay) modalSampleEssay.classList.add('hidden');
+        });
+
+        init();
+    </script>
+</body>
+</html>
