@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HKDSE 中文科卷二寫作能力 10分鐘每日特訓</title>
+
+    <!-- Node Crypto Polyfill for Tailwind JIT -->
+    <script>
+      window.crypto = window.crypto || {};
+      if (!window.crypto.createHash) {
+        window.crypto.createHash = function () {
+          let data = '';
+          return {
+            update: function (str) { data += str; return this; },
+            digest: function () {
+              let hash = 5381;
+              for (let i = 0; i < data.length; i++) {
+                hash = ((hash << 5) + hash) + data.charCodeAt(i);
+              }
+              return (hash >>> 0).toString(16);
+            }
+          };
+        };
+      }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col gap-3">
+            <!-- Row 1: Icon + Title & Subtext -->
+            <div class="flex items-center gap-2.5 min-w-0 w-full">
+                <div class="p-2 bg-red-700 text-white rounded-lg shadow-sm shrink-0">
+                    <i data-lucide="pen-tool" class="w-5 h-5"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <h1 class="font-bold text-base sm:text-lg text-slate-900 tracking-tight leading-tight">DSE 中文卷二寫作 10分鐘微型特訓</h1>
+                    <span class="text-[10px] sm:text-xs text-red-600 font-semibold tracking-wide uppercase block">Ling 3.0 Flash Free AI + DSE 卷二百份制標準</span>
+                </div>
+            </div>
+            
+            <!-- Row 2: Action Buttons -->
+            <div class="flex items-center gap-2 sm:gap-3 text-sm font-medium w-full justify-start sm:justify-end flex-wrap">
+                <button id="btn-api-key" class="flex items-center gap-1.5 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 sm:px-3 py-1.5 rounded-lg border border-slate-200 transition-colors">
+                    <i data-lucide="key" class="w-3.5 h-3.5 text-slate-500"></i>
+                    <span id="api-key-status">API 設定</span>
+                </button>
+                <div class="flex items-center gap-1.5 text-amber-600 bg-amber-50 px-2.5 sm:px-3 py-1.5 rounded-full border border-amber-200 text-xs sm:text-sm">
+                    <i data-lucide="flame" class="w-4 h-4 fill-amber-500 text-amber-500"></i>
+                    <span>連續練習：<strong id="streak-count">0</strong> 天</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Section -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left Column -->
+        <section class="lg:col-span-7 flex flex-col gap-4">
+            
+            <!-- Prompt Display -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <div class="flex items-center gap-2">
+                        <span id="prompt-tag" class="text-xs font-semibold text-red-700 bg-red-50 border border-red-200 px-2.5 py-0.5 rounded-md">10分鐘限時衝刺</span>
+                        <span id="prompt-type" class="text-xs text-slate-400 font-mono">AI 智能生成題目</span>
+                    </div>
+
+                    <!-- Target Genre Selector -->
+                    <div class="flex items-center gap-1.5">
+                        <label for="genre-select" class="text-xs font-semibold text-slate-600 flex items-center gap-1">
+                            <i data-lucide="book-open" class="w-3.5 h-3.5 text-red-700"></i> 文類：
+                        </label>
+                        <select id="genre-select" class="bg-slate-100 border border-slate-200 text-xs rounded-lg px-2 py-1 text-slate-800 font-medium focus:ring-2 focus:ring-red-500 outline-none cursor-pointer">
+                            <option value="記敘描寫（記事抒情／借物抒情）" selected>1. 記敘描寫（記事/借物抒情）</option>
+                            <option value="論說文（立論／駁論／破立結合）">2. 論說文（立論/駁論）</option>
+                            <option value="說明文（事理說明／現象剖析）">3. 說明文（事理/現象說明）</option>
+                            <option value="開放式題目（半命題／寓言引申）">4. 開發式/半命題/寓言</option>
+                            <option value="實用文（書信／文章／演講詞）">5. 實用文（書信/演講詞）</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between mb-2">
+                    <p id="prompt-display" class="text-base sm:text-lg font-semibold text-slate-800 leading-relaxed min-h-[3.5rem] flex items-center">
+                        正在載入寫作題目...
+                    </p>
+                </div>
+
+                <div class="flex justify-between items-center mt-2 pt-2 border-t border-slate-100 text-xs text-slate-500">
+                    <div class="flex items-center gap-1.5">
+                        <i data-lucide="target" class="w-3.5 h-3.5 text-amber-500"></i>
+                        <span id="prompt-tip">建議字數：150–300字。著重成語運用、句式變化、修辭手法與文章立意。</span>
+                    </div>
+                    <button id="btn-new-prompt" class="inline-flex items-center gap-1.5 text-xs font-medium text-red-700 hover:text-red-800 transition-colors bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-md border border-red-200">
+                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> 換一題
+                    </button>
+                </div>
+            </div>
+
+            <!-- Timer -->
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="timer" class="w-5 h-5 text-red-700"></i>
+                    <span class="text-sm font-medium text-slate-600">倒數計時：</span>
+                    <select id="timer-select" class="bg-slate-100 border-none rounded-lg text-sm px-3 py-1.5 text-slate-700 focus:ring-2 focus:ring-red-500 outline-none cursor-pointer font-semibold">
+                        <option value="5">5 分鐘 (極速段落)</option>
+                        <option value="10" selected>10 分鐘 (標準每日特訓)</option>
+                        <option value="15">15 分鐘 (深度潤飾)</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <div id="timer-display" class="font-mono text-2xl font-bold text-red-700 tracking-wider">10:00</div>
+                    <button id="btn-toggle-timer" class="flex items-center gap-1.5 bg-red-700 hover:bg-red-800 text-white font-medium text-sm px-4 py-2 rounded-lg transition-colors">
+                        <i data-lucide="play" class="w-4 h-4"></i>
+                        <span id="timer-btn-text">開始計時</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Editor -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col flex-1 min-h-[320px]">
+                <textarea 
+                    id="editor" 
+                    placeholder="在此輸入你的微型寫作段落...（建議目標：150–300字）" 
+                    class="w-full flex-1 p-5 rounded-t-2xl text-slate-800 text-base leading-relaxed resize-none focus:outline-none placeholder:text-slate-400 font-sans"
+                ></textarea>
+                
+                <div class="border-t border-slate-100 px-5 py-3 bg-slate-50 rounded-b-2xl flex items-center justify-between text-xs text-slate-500">
+                    <div class="flex items-center gap-4">
+                        <span>字數統計：<strong id="word-count" class="text-slate-900 text-sm font-bold">0</strong> 字</span>
+                        <span id="word-status" class="hidden sm:inline-block px-2 py-0.5 rounded bg-slate-200 text-slate-600 font-medium">目標：150–300字</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button id="btn-clear-editor" class="inline-flex items-center gap-1 text-slate-400 hover:text-rose-600 transition-colors py-0.5 px-1.5 rounded hover:bg-slate-200/60">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> 清除內容
+                        </button>
+                        <span id="save-status" class="text-slate-400">自動同步已啟用</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Column -->
+        <aside class="lg:col-span-5 flex flex-col gap-4">
+            
+            <!-- AI Panel -->
+            <div class="bg-gradient-to-br from-red-950 via-slate-900 to-slate-800 text-white p-5 rounded-2xl shadow-md border border-red-500/30">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-2">
+                        <div class="p-1.5 bg-red-500/20 text-red-300 rounded-lg border border-red-400/30">
+                            <i data-lucide="sparkles" class="w-4 h-4"></i>
+                        </div>
+                        <h2 class="font-bold text-base text-red-100">Ling 3.0 中文卷二閱卷員</h2>
+                    </div>
+                    <span class="text-[10px] bg-red-500/30 text-red-200 px-2 py-0.5 rounded border border-red-400/30 font-mono">ling-3.0-flash-vl:free</span>
+                </div>
+                <p class="text-xs text-slate-300 leading-relaxed mb-4">
+                    對應 HKDSE 中文科卷二評分標準（內容40 / 表達30 / 結構20 / 標點錯別字10，共100分），並提供 5** 級範文段落參考。
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <button id="btn-ai-grade" class="flex items-center justify-center gap-1.5 bg-red-700 hover:bg-red-600 text-white font-bold py-2.5 px-3 rounded-xl shadow-lg shadow-red-700/30 transition-all text-xs disabled:opacity-50">
+                        <i data-lucide="cpu" class="w-4 h-4"></i>
+                        <span id="ai-btn-text">Ling AI 批改作文</span>
+                    </button>
+                    <button id="btn-ai-sample" class="flex items-center justify-center gap-1.5 bg-amber-600 hover:bg-amber-500 text-white font-bold py-2.5 px-3 rounded-xl shadow-lg shadow-amber-600/30 transition-all text-xs disabled:opacity-50">
+                        <i data-lucide="award" class="w-4 h-4"></i>
+                        <span id="ai-sample-btn-text">生成 5** 範文</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Score Panel -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-sm">DSE 中文卷二得分 (滿分 100)</h3>
+                        <span class="text-[11px] text-slate-400">內容(40) + 表達(30) + 結構(20) + 錯別字標點(10)</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-[10px] text-slate-400 block uppercase font-mono">預測等級</span>
+                        <span id="predicted-grade" class="text-xl font-extrabold text-red-700">Level 4</span>
+                    </div>
+                </div>
+
+                <div class="space-y-3.5">
+                    <div>
+                        <div class="flex justify-between text-xs font-semibold mb-1">
+                            <span class="text-slate-700">1. 內容與立意 (40 分)</span>
+                            <span class="text-red-700"><span id="val-content">24</span> / 40</span>
+                        </div>
+                        <input type="range" id="score-content" min="0" max="40" value="24" class="w-full accent-red-700 bg-slate-200 h-1.5 rounded-lg cursor-pointer">
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-xs font-semibold mb-1">
+                            <span class="text-slate-700">2. 文詞與表達 (30 分)</span>
+                            <span class="text-red-700"><span id="val-express">18</span> / 30</span>
+                        </div>
+                        <input type="range" id="score-express" min="0" max="30" value="18" class="w-full accent-red-700 bg-slate-200 h-1.5 rounded-lg cursor-pointer">
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-xs font-semibold mb-1">
+                            <span class="text-slate-700">3. 結構與組織 (20 分)</span>
+                            <span class="text-red-700"><span id="val-struct">12</span> / 20</span>
+                        </div>
+                        <input type="range" id="score-struct" min="0" max="20" value="12" class="w-full accent-red-700 bg-slate-200 h-1.5 rounded-lg cursor-pointer">
+                    </div>
+
+                    <div class="flex items-center justify-between pt-2 border-t border-slate-100 text-xs text-slate-600">
+                        <span>4. 錯別字與標點符號 (10 分):</span>
+                        <select id="penalty-words" class="bg-slate-100 border border-slate-200 rounded px-2 py-0.5 text-xs outline-none">
+                            <option value="10">10 分 (極少/無錯別字，標點準確)</option>
+                            <option value="8" selected>8 分 (偶有 1-2 個錯別字)</option>
+                            <option value="6">6 分 (錯別字 3-5 個)</option>
+                            <option value="4">4 分 (錯別字較多，影響閱讀)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Latest AI Comments Summary Container -->
+                <div id="ai-comments-container" class="mt-4 p-3 bg-red-50 rounded-xl border border-red-200 hidden">
+                    <div class="flex items-center gap-1.5 font-bold text-xs text-red-900 mb-1">
+                        <i data-lucide="message-square" class="w-3.5 h-3.5 text-red-600"></i> Ling AI 閱卷員評語
+                    </div>
+                    <div id="ai-comments-summary" class="text-xs text-slate-700 leading-relaxed whitespace-pre-wrap"></div>
+                </div>
+
+                <div class="mt-4 p-3 bg-slate-900 text-white rounded-xl flex items-center justify-between">
+                    <div>
+                        <span class="text-[10px] text-slate-400 block">總分</span>
+                        <div class="text-2xl font-black text-amber-400 font-mono"><span id="total-score">64</span> <span class="text-xs text-slate-400 font-normal">/ 100 分</span></div>
+                    </div>
+                    <button id="btn-save" class="flex items-center gap-1.5 bg-red-700 hover:bg-red-800 text-white font-medium text-xs px-4 py-2.5 rounded-lg transition-colors shadow-sm">
+                        <i data-lucide="check-circle" class="w-4 h-4"></i> 儲存今日寫作
+                    </button>
+                </div>
+            </div>
+
+            <!-- History List -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col h-[260px]">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                        <i data-lucide="calendar" class="w-4 h-4 text-red-700"></i> 寫作特訓歷史檔案
+                    </h3>
+                    <span id="history-count" class="text-xs font-semibold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">0 篇</span>
+                </div>
+
+                <div id="history-list" class="flex-1 overflow-y-auto custom-scrollbar space-y-2.5 pr-1"></div>
+            </div>
+        </aside>
+
+    </main>
+
+    <!-- Modal 1: Details View -->
+    <div id="modal-view" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-xl overflow-hidden">
+            <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span id="modal-grade" class="px-2 py-0.5 rounded text-xs font-bold bg-red-700 text-white">5**</span>
+                        <span id="modal-date" class="text-xs text-slate-400">2026-09-18</span>
+                    </div>
+                    <h3 id="modal-prompt" class="font-bold text-slate-800 text-base mt-1">題目...</h3>
+                </div>
+                <button id="btn-close-modal" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <div class="px-6 py-2.5 bg-red-50 border-b border-slate-100 flex justify-around text-xs text-slate-600 font-medium">
+                <div>內容: <strong id="modal-score-c" class="text-red-700">0</strong>/40</div>
+                <div>表達: <strong id="modal-score-e" class="text-red-700">0</strong>/30</div>
+                <div>結構: <strong id="modal-score-s" class="text-red-700">0</strong>/20</div>
+                <div>錯別字/標點: <strong id="modal-score-p" class="text-red-700">0</strong>/10</div>
+                <div>總分: <strong id="modal-score-total" class="text-red-700">0</strong>/100</div>
+            </div>
+
+            <div id="modal-ai-feedback-container" class="p-4 bg-red-50 border-b border-red-100 text-xs text-slate-700 hidden space-y-2 max-h-48 overflow-y-auto">
+                <div class="font-bold text-red-900 flex items-center gap-1.5">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5 text-red-600"></i> Ling AI 閱卷員詳細批語
+                </div>
+                <div id="modal-ai-feedback" class="leading-relaxed whitespace-pre-wrap text-slate-600"></div>
+            </div>
+
+            <div class="p-6 overflow-y-auto flex-1 text-slate-700 leading-relaxed whitespace-pre-wrap" id="modal-content"></div>
+            <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-between items-center text-xs text-slate-500">
+                <span id="modal-word-count">總字數：0 字</span>
+                <button id="btn-delete-entry" class="text-rose-500 hover:text-rose-700 flex items-center gap-1">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> 刪除紀錄
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2: API Keys Input -->
+    <div id="modal-api" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl">
+            <h3 class="font-bold text-slate-900 text-lg mb-2 flex items-center gap-2">
+                <i data-lucide="key" class="w-5 h-5 text-red-600"></i> 設定 API 金鑰與服務商
+            </h3>
+            <p class="text-xs text-slate-500 leading-relaxed mb-4">
+                API 金鑰將安全地儲存在您的本地瀏覽器中。請選擇主要的 API 服務商。
+            </p>
+            
+            <div class="space-y-4 mb-5">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">
+                        主要 API 服務商
+                    </label>
+                    <select id="select-api-provider" class="w-full p-2.5 bg-slate-100 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-red-500">
+                        <option value="openrouter">OpenRouter (預設)</option>
+                        <option value="mistral">Mistral AI</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
+                        <span>OpenRouter API Key</span>
+                        <span class="text-[10px] text-slate-400 font-normal">主要服務商</span>
+                    </label>
+                    <input type="password" id="input-api-key" placeholder="sk-or-v1-..." class="w-full p-2.5 bg-slate-100 border border-slate-200 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-red-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
+                        <span>Mistral AI Key</span>
+                        <span class="text-[10px] text-slate-400 font-normal">後備服務商</span>
+                    </label>
+                    <input type="password" id="input-mistral-key" placeholder="Mistral API key..." class="w-full p-2.5 bg-slate-100 border border-slate-200 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-red-500">
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 text-xs">
+                <button id="btn-close-api" class="px-4 py-2 text-slate-500 hover:bg-slate-100 rounded-lg">取消</button>
+                <button id="btn-save-api" class="px-4 py-2 bg-red-700 text-white font-medium rounded-lg hover:bg-red-800">儲存設定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 3: Sample Essay Display -->
+    <div id="modal-sample-essay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-xl overflow-hidden">
+            <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-amber-50">
+                <div class="flex items-center gap-2">
+                    <span class="p-1.5 bg-amber-600 text-white rounded-lg">
+                        <i data-lucide="award" class="w-4 h-4"></i>
+                    </span>
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-base">HKDSE 中文卷二 Level 5** 範文段落</h3>
+                        <span id="sample-genre-badge" class="text-xs text-amber-700 font-medium">文類：---</span>
+                    </div>
+                </div>
+                <button id="btn-close-sample-modal" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="p-4 bg-slate-50 border-b border-slate-100 text-xs text-slate-600">
+                <div class="font-semibold text-slate-800 mb-0.5">題目：</div>
+                <p id="sample-prompt-text" class="text-slate-700 italic">---</p>
+            </div>
+
+            <div class="p-6 overflow-y-auto flex-1 text-slate-800 leading-relaxed whitespace-pre-wrap text-base" id="sample-essay-content">
+                正在生成中...
+            </div>
+
+            <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-between items-center text-xs">
+                <span id="sample-essay-wordcount" class="text-slate-500 font-mono">字數：0 字</span>
+                <button id="btn-copy-sample" class="flex items-center gap-1.5 bg-amber-600 hover:bg-amber-700 text-white font-medium px-3.5 py-1.5 rounded-lg transition-colors">
+                    <i data-lucide="copy" class="w-3.5 h-3.5"></i> 複製範文
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS Logic -->
+    <script>
+        const FALLBACK_PROMPTS = {
+            "記敘描寫（記事抒情／借物抒情）": {
+                type: "記敘描寫：細緻人物與心理刻劃",
+                title: "「試描寫一位老手藝人在昏暗工作坊中專注修復傳家寶的過程，並寫出你的感受。」(150–250字)",
+                tip: "善用多感官描寫、細致動作詞彙與環境烘托，昇華至人生哲理或情感思念。"
+            },
+            "論說文（立論／駁論／破立結合）": {
+                type: "論說文：駁論與例證發揮",
+                title: "「有人認為『人工智能會削弱人類的創新思考能力』，試寫一個駁論段落予以反駁。」(150–250字)",
+                tip: "先歸納對方錯謬，再運用「先破後立」手法，結合具體實例進行深層次邏輯推演。"
+            },
+            "說明文（事理說明／現象剖析）": {
+                type: "說明文：現象剖析與因果說明",
+                title: "「試剖析現代城市人出現『社交焦慮』的兩個核心成因。」(150–250字)",
+                tip: "保持客觀嚴謹的語氣，運用分類說明或因果說明，善用條理分明的過渡詞。"
+            },
+            "開放式題目（半命題／寓言引申）": {
+                type: "開放式／寓言引申",
+                title: "「以『木棉花落』為題，寫一段借物抒情或引申哲理的段落。」(150–250字)",
+                tip: "觀察物象特徵（如木棉花沉重直落），連結人生際遇，深化主題立意。"
+            },
+            "實用文（書信／文章／演講詞）": {
+                type: "實用文：演講詞呼籲或建議書",
+                title: "「以學生會主席身份，撰寫一段向全校同學呼籲關注精神健康的演講詞開場白。」(150–250字)",
+                tip: "注重實用文格式與行文語氣，運用修辭（如排比、設問）迅速拉近與聽眾距離。"
+            }
+        };
+
+        let entries = [];
+        try {
+            entries = JSON.parse(localStorage.getItem('hkdse_chi_micro_entries') || '[]');
+            if (!Array.isArray(entries)) entries = [];
+        } catch (e) {
+            entries = [];
+        }
+
+        let openrouterApiKey = localStorage.getItem('openrouter_api_key') || '';
+        let mistralApiKey = localStorage.getItem('mistral_api_key') || '';
+        let preferredApiProvider = localStorage.getItem('preferred_api_provider') || 'openrouter';
+        let currentPromptObj = null;
+        let timerInterval = null;
+        let timeLeft = 600; // 10 mins default
+        let isTimerRunning = false;
+        let selectedEntryId = null;
+        let lastAiFeedback = "";
+
+        const PRIMARY_MODEL = "inclusionai/ling-3.0-flash-vl:free";
+        const FALLBACK_MODELS = [
+            "google/gemini-2.0-flash-lite-preview-02-05:free",
+            "google/gemma-2-9b-it:free"
+        ];
+
+        // DOM Elements
+        const promptTag = document.getElementById('prompt-tag');
+        const promptType = document.getElementById('prompt-type');
+        const promptDisplay = document.getElementById('prompt-display');
+        const promptTip = document.getElementById('prompt-tip');
+        const btnNewPrompt = document.getElementById('btn-new-prompt');
+        const genreSelect = document.getElementById('genre-select');
+
+        const timerSelect = document.getElementById('timer-select');
+        const timerDisplay = document.getElementById('timer-display');
+        const btnToggleTimer = document.getElementById('btn-toggle-timer');
+        const timerBtnText = document.getElementById('timer-btn-text');
+
+        const editor = document.getElementById('editor');
+        const btnClearEditor = document.getElementById('btn-clear-editor');
+        const wordCountDisplay = document.getElementById('word-count');
+        const wordStatus = document.getElementById('word-status');
+        const saveStatus = document.getElementById('save-status');
+        const btnSave = document.getElementById('btn-save');
+
+        const btnAiGrade = document.getElementById('btn-ai-grade');
+        const aiBtnText = document.getElementById('ai-btn-text');
+        const btnAiSample = document.getElementById('btn-ai-sample');
+        const aiSampleBtnText = document.getElementById('ai-sample-btn-text');
+
+        const btnApiKey = document.getElementById('btn-api-key');
+        const apiKeyStatus = document.getElementById('api-key-status');
+
+        const scoreContent = document.getElementById('score-content');
+        const scoreExpress = document.getElementById('score-express');
+        const scoreStruct = document.getElementById('score-struct');
+        const penaltyWords = document.getElementById('penalty-words');
+
+        const valContent = document.getElementById('val-content');
+        const valExpress = document.getElementById('val-express');
+        const valStruct = document.getElementById('val-struct');
+        const totalScoreDisplay = document.getElementById('total-score');
+        const predictedGradeDisplay = document.getElementById('predicted-grade');
+
+        const aiCommentsContainer = document.getElementById('ai-comments-container');
+        const aiCommentsSummary = document.getElementById('ai-comments-summary');
+
+        const historyList = document.getElementById('history-list');
+        const historyCount = document.getElementById('history-count');
+        const streakCountDisplay = document.getElementById('streak-count');
+
+        const modalView = document.getElementById('modal-view');
+        const modalGrade = document.getElementById('modal-grade');
+        const modalDate = document.getElementById('modal-date');
+        const modalPrompt = document.getElementById('modal-prompt');
+        const modalContent = document.getElementById('modal-content');
+        const modalWordCount = document.getElementById('modal-word-count');
+        const modalScoreC = document.getElementById('modal-score-c');
+        const modalScoreE = document.getElementById('modal-score-e');
+        const modalScoreS = document.getElementById('modal-score-s');
+        const modalScoreP = document.getElementById('modal-score-p');
+        const modalScoreTotal = document.getElementById('modal-score-total');
+        const modalAiFeedbackContainer = document.getElementById('modal-ai-feedback-container');
+        const modalAiFeedback = document.getElementById('modal-ai-feedback');
+        const btnCloseModal = document.getElementById('btn-close-modal');
+        const btnDeleteEntry = document.getElementById('btn-delete-entry');
+
+        const modalApi = document.getElementById('modal-api');
+        const selectApiProvider = document.getElementById('select-api-provider');
+        const inputApiKey = document.getElementById('input-api-key');
+        const inputMistralKey = document.getElementById('input-mistral-key');
+        const btnCloseApi = document.getElementById('btn-close-api');
+        const btnSaveApi = document.getElementById('btn-save-api');
+
+        const modalSampleEssay = document.getElementById('modal-sample-essay');
+        const sampleGenreBadge = document.getElementById('sample-genre-badge');
+        const samplePromptText = document.getElementById('sample-prompt-text');
+        const sampleEssayContent = document.getElementById('sample-essay-content');
+        const sampleEssayWordcount = document.getElementById('sample-essay-wordcount');
+        const btnCloseSampleModal = document.getElementById('btn-close-sample-modal');
+        const btnCopySample = document.getElementById('btn-copy-sample');
+
+        function init() {
+            lucide.createIcons();
+            getAiGeneratedPrompt();
+            updateTimerDisplay();
+            calculateDseScore();
+            renderHistory();
+            updateStats();
+            updateApiKeyUI();
+
+            editor.addEventListener('input', () => {
+                updateWordCount();
+                saveStatus.textContent = "輸入中...";
+                setTimeout(() => { saveStatus.textContent = "自動同步已啟用"; }, 1000);
+            });
+
+            btnClearEditor.addEventListener('click', clearEditorContent);
+
+            [scoreContent, scoreExpress, scoreStruct, penaltyWords].forEach(el => {
+                el.addEventListener('input', calculateDseScore);
+            });
+
+            genreSelect.addEventListener('change', () => {
+                getAiGeneratedPrompt();
+            });
+        }
+
+        function clearEditorContent() {
+            if (!editor.value.trim() || confirm("確定要清除輸入框內的所有內容嗎？")) {
+                editor.value = "";
+                updateWordCount();
+                saveStatus.textContent = "內容已清除";
+                setTimeout(() => { saveStatus.textContent = "自動同步已啟用"; }, 1500);
+            }
+        }
+
+        function updateApiKeyUI() {
+            const activeProviderLabel = preferredApiProvider === 'mistral' ? 'Mistral' : 'OpenRouter';
+            if ((preferredApiProvider === 'openrouter' && openrouterApiKey) || (preferredApiProvider === 'mistral' && mistralApiKey)) {
+                apiKeyStatus.textContent = activeProviderLabel + " 已啟用";
+                btnApiKey.classList.replace('bg-slate-100', 'bg-emerald-50');
+                btnApiKey.classList.replace('text-slate-700', 'text-emerald-700');
+            } else {
+                apiKeyStatus.textContent = "設定 API 金鑰";
+                btnApiKey.classList.replace('bg-emerald-50', 'bg-slate-100');
+                btnApiKey.classList.replace('text-emerald-700', 'text-slate-700');
+            }
+        }
+
+        // Feature 1: AI Prompt Generation
+        async function getAiGeneratedPrompt() {
+            const selectedGenre = genreSelect.value;
+
+            if (!openrouterApiKey && !mistralApiKey) {
+                const fallback = FALLBACK_PROMPTS[selectedGenre] || FALLBACK_PROMPTS["記敘描寫（記事抒情／借物抒情）"];
+                currentPromptObj = fallback;
+                promptType.textContent = fallback.type;
+                promptDisplay.textContent = fallback.title;
+                promptTip.textContent = "寫作建議：" + fallback.tip;
+                return;
+            }
+
+            promptDisplay.textContent = "✨ Ling AI 正為您出題（文類：\"" + selectedGenre + "\"）...";
+            btnNewPrompt.disabled = true;
+
+            const systemInstruction = "你是一位精通香港中學文憑試（HKDSE）中國語文科卷二（寫作能力）的資深名師與閱卷員。\n" +
+                "請針對指定文類，生成一個高質素的 10 分鐘微型寫作題目（150–300字）。\n" +
+                "必須嚴格輸出 JSON 格式（不要使用 Markdown 程式碼區塊格式）：\n" +
+                "{\n" +
+                "  \"type\": \"" + selectedGenre + "\",\n" +
+                "  \"title\": \"\\\"題目內容...\\\" (150-250字)\",\n" +
+                "  \"tip\": \"針對此文類的立意、成語、修辭或文章結構的指導建議...\"\n" +
+                "}";
+
+            const userPrompt = "請生成一個 HKDSE 中文卷二特訓題目，文類：\"" + selectedGenre + "\"。";
+
+            try {
+                const rawText = await fetchOpenRouterAPI(PRIMARY_MODEL, systemInstruction, userPrompt);
+                let jsonCandidate = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+                const match = jsonCandidate.match(/\{[\s\S]*\}/);
+                if (match) jsonCandidate = match[0];
+                const cleanJsonString = jsonCandidate.replace(/\u00a0/g, ' ');
+                const sanitizedString = cleanJsonString.replace(/\r?\n/g, '');
+
+                const aiPrompt = JSON.parse(sanitizedString);
+
+                currentPromptObj = {
+                    type: aiPrompt.type || selectedGenre,
+                    title: aiPrompt.title || "無法解析題目內容。",
+                    tip: aiPrompt.tip || "注意文詞流暢、文脈連貫與立意深刻。"
+                };
+
+                promptType.textContent = currentPromptObj.type;
+                promptDisplay.textContent = currentPromptObj.title;
+                promptTip.textContent = "寫作建議：" + currentPromptObj.tip;
+
+            } catch (err) {
+                console.warn("AI 題目生成失敗，切換至離線預設題目:", err);
+                const fallback = FALLBACK_PROMPTS[selectedGenre] || FALLBACK_PROMPTS["記敘描寫（記事抒情／借物抒情）"];
+                currentPromptObj = fallback;
+                promptType.textContent = fallback.type;
+                promptDisplay.textContent = fallback.title;
+                promptTip.textContent = "寫作建議：" + fallback.tip;
+            } finally {
+                btnNewPrompt.disabled = false;
+            }
+        }
+
+        // Calculate DSE Chinese Score (Strict Non-NaN handling)
+        function calculateDseScore() {
+            const c = parseInt(scoreContent.value) || 0;
+            const e = parseInt(scoreExpress.value) || 0;
+            const s = parseInt(scoreStruct.value) || 0;
+            const p = parseInt(penaltyWords.value) || 0;
+
+            valContent.textContent = c;
+            valExpress.textContent = e;
+            valStruct.textContent = s;
+
+            let total = c + e + s + p;
+            if (isNaN(total)) total = 0;
+            if (total > 100) total = 100;
+            if (total < 0) total = 0;
+
+            totalScoreDisplay.textContent = total;
+
+            let grade = "1";
+            if (total >= 85) grade = "5**";
+            else if (total >= 78) grade = "5*";
+            else if (total >= 70) grade = "5";
+            else if (total >= 60) grade = "4";
+            else if (total >= 50) grade = "3";
+            else if (total >= 40) grade = "2";
+
+            predictedGradeDisplay.textContent = "Level " + grade;
+            return { c, e, s, p, total, grade };
+        }
+
+        async function callOpenRouter(modelName, systemInstruction, userPrompt) {
+            const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": "Bearer " + openrouterApiKey,
+                    "Content-Type": "application/json",
+                    "HTTP-Referer": window.location.href,
+                    "X-Title": "DSE Chinese Paper 2 Writing Trainer"
+                },
+                body: JSON.stringify({
+                    model: modelName,
+                    messages: [
+                        { role: "system", content: systemInstruction },
+                        { role: "user", content: userPrompt }
+                    ],
+                    temperature: 0.3
+                })
+            });
+
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                throw new Error(errData.error?.message || "HTTP 狀態碼: " + response.status);
+            }
+
+            const data = await response.json();
+            return data.choices[0].message.content.trim();
+        }
+
+        async function callMistral(systemInstruction, userPrompt) {
+            const mistralResponse = await fetch("https://api.mistral.ai/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": "Bearer " + mistralApiKey,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    model: "mistral-tiny-latest",
+                    messages: [
+                        { role: "system", content: systemInstruction },
+                        { role: "user", content: userPrompt }
+                    ],
+                    temperature: 0.3
+                })
+            });
+
+            if (!mistralResponse.ok) {
+                const mistralErrData = await mistralResponse.json().catch(() => ({}));
+                throw new Error(mistralErrData.error?.message || "Mistral HTTP 狀態碼: " + mistralResponse.status);
+            }
+
+            const mistralData = await mistralResponse.json();
+            return mistralData.choices[0].message.content.trim();
+        }
+
+        async function fetchOpenRouterAPI(modelName, systemInstruction, userPrompt) {
+            if (preferredApiProvider === 'mistral') {
+                if (mistralApiKey) {
+                    try {
+                        return await callMistral(systemInstruction, userPrompt);
+                    } catch (mistralErr) {
+                        console.warn("Mistral API 呼叫失敗，嘗試切換至 OpenRouter API:", mistralErr);
+                        if (!openrouterApiKey) throw mistralErr;
+                    }
+                }
+                if (openrouterApiKey) {
+                    return await callOpenRouter(modelName, systemInstruction, userPrompt);
+                }
+            } else {
+                if (openrouterApiKey) {
+                    try {
+                        return await callOpenRouter(modelName, systemInstruction, userPrompt);
+                    } catch (openRouterErr) {
+                        console.warn("OpenRouter API 呼叫失敗，嘗試切換至 Mistral API:", openRouterErr);
+                        if (!mistralApiKey) throw openRouterErr;
+                    }
+                }
+                if (mistralApiKey) {
+                    return await callMistral(systemInstruction, userPrompt);
+                }
+            }
+
+            throw new Error("未提供有效的 API Key。");
+        }
+
+        // Feature 2: HKDSE Chinese Paper 2 AI Grading
+        async function runOpenRouterGrading() {
+            if (!openrouterApiKey && !mistralApiKey) {
+                alert("請先設定 OpenRouter 或 Mistral API Key！");
+                modalApi.classList.remove('hidden');
+                return;
+            }
+
+            const content = editor.value.trim();
+            if (!content) {
+                alert("請先輸入寫作內容再進行 AI 批改！");
+                return;
+            }
+
+            const currentGenre = genreSelect.value;
+
+            btnAiGrade.disabled = true;
+            aiBtnText.textContent = "Ling AI 閱卷中...";
+
+            const systemInstruction = "你是一位非常嚴格且資深的 HKDSE 中國語文科卷二（寫作能力）資深閱卷員及名師。\n" +
+                "學生完成了 10 分鐘微型寫作特訓（150–300字），文類為：\"" + currentGenre + "\"。\n" +
+                "請嚴格依據 HKDSE 中文科卷二官方百分制評分標準進行評審：\n" +
+                "1. 內容與立意 (ContentScore: 滿分40)\n" +
+                "2. 文詞與表達 (ExpressScore: 滿分30)\n" +
+                "3. 結構與組織 (StructScore: 滿分20)\n" +
+                "4. 錯別字與標點 (PunctuationScore: 滿分10，給予10/8/6/4分)\n\n" +
+                "必須嚴格輸出 JSON 格式（不要使用 Markdown 程式碼區塊）：\n" +
+                "{\n" +
+                "  \"contentScore\": 28,\n" +
+                "  \"expressScore\": 21,\n" +
+                "  \"structScore\": 14,\n" +
+                "  \"punctuationScore\": 8,\n" +
+                "  \"overallComment\": \"指出目前預測等級，以及突破至 5** 級的核心瓶頸...\",\n" +
+                "  \"strengths\": \"肯定優質文詞、成語、修辭手法或立意亮點...\",\n" +
+                "  \"weaknesses\": \"指出文字平淡、立意淺薄或邏輯問題等改進建議...\",\n" +
+                "  \"exemplarRewrite\": \"選取學生文章中的句子，修改提升為 5** 級的精妙句式與詞彙...\",\n" +
+                "  \"typosFound\": \"列出發現的錯別字、病句或標點符號不當之處...\"\n" +
+                "}";
+
+            const userPrompt = "[文類]: " + currentGenre + "\n[10分鐘題目]: " + (currentPromptObj ? currentPromptObj.title : '') + "\n[學生文章內容]:\n" + content;
+
+            let rawText = "";
+            let usedModel = PRIMARY_MODEL;
+
+            try {
+                try {
+                    rawText = await fetchOpenRouterAPI(PRIMARY_MODEL, systemInstruction, userPrompt);
+                } catch (primaryErr) {
+                    console.warn("主模型呼叫失敗，嘗試備用模型:", primaryErr);
+                    let success = false;
+                    for (const fallbackModel of FALLBACK_MODELS) {
+                        try {
+                            aiBtnText.textContent = "嘗試備用 AI 模型...";
+                            rawText = await fetchOpenRouterAPI(fallbackModel, systemInstruction, userPrompt);
+                            usedModel = fallbackModel;
+                            success = true;
+                            break;
+                        } catch (fallbackErr) {
+                            console.warn("備用模型失敗:", fallbackErr);
+                        }
+                    }
+                    if (!success) throw primaryErr;
+                }
+
+                let jsonCandidate = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+                const match = jsonCandidate.match(/\{[\s\S]*\}/);
+                if (match) jsonCandidate = match[0];
+                const cleanJsonString = jsonCandidate.replace(/\u00a0/g, ' ');
+                const sanitizedString = cleanJsonString.replace(/\r?\n/g, '');
+
+                const aiResult = JSON.parse(sanitizedString);
+
+                scoreContent.value = Math.min(40, Math.max(0, parseInt(aiResult.contentScore) || 0));
+                scoreExpress.value = Math.min(30, Math.max(0, parseInt(aiResult.expressScore) || 0));
+                scoreStruct.value = Math.min(20, Math.max(0, parseInt(aiResult.structScore) || 0));
+                penaltyWords.value = parseInt(aiResult.punctuationScore) || 8;
+
+                calculateDseScore();
+
+                function formatAiText(val) {
+                    if (!val) return '無';
+                    if (Array.isArray(val)) {
+                        return '<ul class="list-disc pl-4 mt-1 space-y-0.5">' + 
+                            val.map(item => '<li>' + (typeof item === 'object' ? JSON.stringify(item) : item) + '</li>').join('') + 
+                            '</ul>';
+                    }
+                    if (typeof val === 'object') {
+                        return Object.entries(val).map(([k, v]) => `<div><strong>${k}:</strong> ${v}</div>`).join('');
+                    }
+                    return val;
+                }
+
+                lastAiFeedback = "【文類】" + currentGenre + " | 【AI 模型】" + usedModel + "\n\n" +
+                    "📌 " + (typeof aiResult.overallComment === 'object' ? JSON.stringify(aiResult.overallComment) : (aiResult.overallComment || '無')) + "\n\n" +
+                    "✨ " + (Array.isArray(aiResult.strengths) ? aiResult.strengths.join('\n') : (aiResult.strengths || '無')) + "\n\n" +
+                    "💡 " + (Array.isArray(aiResult.weaknesses) ? aiResult.weaknesses.join('\n') : (aiResult.weaknesses || '無')) + "\n\n" +
+                    "🚀 " + (typeof aiResult.exemplarRewrite === 'object' ? JSON.stringify(aiResult.exemplarRewrite) : (aiResult.exemplarRewrite || '無')) + "\n\n" +
+                    "✍️ " + (Array.isArray(aiResult.typosFound) ? aiResult.typosFound.join('\n') : (aiResult.typosFound || '無'));
+
+                aiCommentsSummary.innerHTML = 
+                    '<div class="space-y-2 text-xs leading-relaxed">' +
+                        '<div><strong class="text-red-900 block font-semibold">📌 閱卷員總評 (' + currentGenre + ')：</strong>' + formatAiText(aiResult.overallComment) + '</div>' +
+                        '<div><strong class="text-emerald-800 block font-semibold">✨ 文章亮點：</strong>' + formatAiText(aiResult.strengths) + '</div>' +
+                        '<div><strong class="text-amber-800 block font-semibold">💡 衝刺 5** 建議：</strong>' + formatAiText(aiResult.weaknesses) + '</div>' +
+                        '<div class="p-2 bg-red-100/70 border border-red-200 rounded-lg"><strong class="text-red-950 block font-bold mb-0.5">🚀 5** 句式詞彙升級：</strong>' + formatAiText(aiResult.exemplarRewrite) + '</div>' +
+                        '<div><strong class="text-slate-700 block font-semibold">✍️ 錯別字與病句修正：</strong>' + formatAiText(aiResult.typosFound) + '</div>' +
+                    '</div>';
+
+                aiCommentsContainer.classList.remove('hidden');
+
+                alert("🎉 AI 批改完成！評語與 5** 升級建議已生成。\n預測等級：" + predictedGradeDisplay.textContent + " (" + totalScoreDisplay.textContent + "/100 分)");
+
+            } catch (err) {
+                console.error("Grading Error:", err);
+                alert("AI 批改發生錯誤：" + err.message);
+            } finally {
+                btnAiGrade.disabled = false;
+                aiBtnText.textContent = "Ling AI 批改作文";
+            }
+        }
+
+        // Feature 3: Sample Generation
+        async function generateSampleEssay() {
+            if (!openrouterApiKey && !mistralApiKey) {
+                alert("請先設定 OpenRouter 或 Mistral API Key！");
+                modalApi.classList.remove('hidden');
+                return;
+            }
+
+            const currentGenre = genreSelect.value;
+            const promptTitle = currentPromptObj ? currentPromptObj.title : "10分鐘中文寫作題目";
+
+            btnAiSample.disabled = true;
+            aiSampleBtnText.textContent = "生成範文中...";
+
+            sampleGenreBadge.textContent = "文類：" + currentGenre;
+            samplePromptText.textContent = promptTitle;
+            sampleEssayContent.textContent = "✨ Ling AI 正在撰寫頂級 HKDSE 中文 5** 範文段落...";
+            modalSampleEssay.classList.remove('hidden');
+
+            const systemInstruction = "你是一位香港頂尖的 HKDSE 中文科名師，擅長撰寫 5** 級滿分示範文章。\n" +
+                "請根據題目與文類 (" + currentGenre + ")，撰寫一段 5** 級別的中文微型寫作範文（約 200–350 字）。\n" +
+                "要求：\n" +
+                "1. 展現典雅詞彙、成語運用、靈活修辭及深刻立意。\n" +
+                "2. 嚴格符合 " + currentGenre + " 的體裁規範。\n" +
+                "3. 直接輸出範文，並於文末附加 2-3 個賞析要點（說明所用的詞語、成語或修辭技巧）。";
+
+            const userPrompt = "[文類]: " + currentGenre + "\n[題目]: " + promptTitle;
+
+            try {
+                let rawText = "";
+                try {
+                    rawText = await fetchOpenRouterAPI(PRIMARY_MODEL, systemInstruction, userPrompt);
+                } catch (primaryErr) {
+                    console.warn("主模型生成範文失敗，嘗試備用模型:", primaryErr);
+                    let success = false;
+                    for (const fallbackModel of FALLBACK_MODELS) {
+                        try {
+                            rawText = await fetchOpenRouterAPI(fallbackModel, systemInstruction, userPrompt);
+                            success = true;
+                            break;
+                        } catch (fallbackErr) {
+                            console.warn("備用模型失敗:", fallbackErr);
+                        }
+                    }
+                    if (!success) throw primaryErr;
+                }
+
+                sampleEssayContent.textContent = rawText;
+                sampleEssayWordcount.textContent = "字數：" + rawText.length + " 字";
+
+            } catch (err) {
+                console.error("Sample Generation Error:", err);
+                sampleEssayContent.textContent = "❌ 生成範文失敗：" + err.message;
+            } finally {
+                btnAiSample.disabled = false;
+                aiSampleBtnText.textContent = "生成 5** 範文";
+            }
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = minutes.toString().padStart(2, '0') + ":" + seconds.toString().padStart(2, '0');
+        }
+
+        function toggleTimer() {
+            if (isTimerRunning) {
+                clearInterval(timerInterval);
+                isTimerRunning = false;
+                timerBtnText.textContent = "繼續";
+                btnToggleTimer.classList.replace('bg-amber-600', 'bg-red-700');
+            } else {
+                isTimerRunning = true;
+                timerBtnText.textContent = "暫停";
+                btnToggleTimer.classList.replace('bg-red-700', 'bg-amber-600');
+                
+                timerInterval = setInterval(() => {
+                    if (timeLeft > 0) {
+                        timeLeft--;
+                        updateTimerDisplay();
+                    } else {
+                        clearInterval(timerInterval);
+                        isTimerRunning = false;
+                        alert("⏰ 10分鐘特訓時間到！請執行 AI 批改或儲存您的寫作。");
+                        timerBtnText.textContent = "重設計時";
+                    }
+                }, 1000);
+            }
+            lucide.createIcons();
+        }
+
+        timerSelect.addEventListener('change', (e) => {
+            if (!isTimerRunning) {
+                timeLeft = parseInt(e.target.value) * 60;
+                updateTimerDisplay();
+            }
+        });
+
+        function updateWordCount() {
+            const text = editor.value.trim();
+            const total = text.length;
+            
+            wordCountDisplay.textContent = total;
+
+            if (total < 100) {
+                wordStatus.textContent = "未達 100 字基礎門檻";
+                wordStatus.className = "hidden sm:inline-block px-2 py-0.5 rounded bg-amber-100 text-amber-700 font-medium";
+            } else if (total >= 100 && total <= 350) {
+                wordStatus.textContent = "10分鐘衝刺最佳字數";
+                wordStatus.className = "hidden sm:inline-block px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 font-medium";
+            } else {
+                wordStatus.textContent = "超出建議字數（建議精簡）";
+                wordStatus.className = "hidden sm:inline-block px-2 py-0.5 rounded bg-blue-100 text-blue-700 font-medium";
+            }
+
+            return total;
+        }
+
+        function saveEntry() {
+            const content = editor.value.trim();
+            if (!content) {
+                alert("請先輸入文字再儲存特訓紀錄！");
+                return;
+            }
+
+            const scoreData = calculateDseScore();
+
+            const newEntry = {
+                id: Date.now(),
+                date: new Date().toISOString().split('T')[0],
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                genre: genreSelect.value,
+                prompt: currentPromptObj ? currentPromptObj.title : '',
+                content: content,
+                words: updateWordCount(),
+                score: scoreData,
+                aiFeedback: lastAiFeedback
+            };
+
+            entries.unshift(newEntry);
+            localStorage.setItem('hkdse_chi_micro_entries', JSON.stringify(entries));
+
+            editor.value = "";
+            lastAiFeedback = "";
+            aiCommentsContainer.classList.add('hidden');
+            updateWordCount();
+            saveStatus.textContent = "儲存成功！";
+            
+            if(isTimerRunning) toggleTimer();
+            timeLeft = parseInt(timerSelect.value) * 60;
+            updateTimerDisplay();
+
+            renderHistory();
+            updateStats();
+            getAiGeneratedPrompt();
+
+            alert("🔥 每日特訓已紀錄！預測等級：Level " + scoreData.grade + " (" + scoreData.total + "/100 分)");
+        }
+
+        function renderHistory() {
+            historyList.innerHTML = "";
+            historyCount.textContent = entries.length + " 篇";
+
+            if (entries.length === 0) {
+                historyList.innerHTML = '<div class="h-full flex flex-col items-center justify-center text-slate-400 py-6"><i data-lucide="award" class="w-8 h-8 mb-1 opacity-40"></i><p class="text-xs">暫無寫作紀錄</p></div>';
+                lucide.createIcons();
+                return;
+            }
+
+            entries.forEach(entry => {
+                const card = document.createElement('div');
+                card.className = "p-2.5 bg-slate-50 hover:bg-slate-100/80 rounded-xl border border-slate-200 cursor-pointer transition-all group";
+                card.onclick = () => openModal(entry.id);
+
+                const genreLabel = entry.genre ? '<span class="text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded font-medium mr-1 truncate max-w-[110px] inline-block align-bottom">' + entry.genre + '</span>' : '';
+                const scoreVal = (entry.score && !isNaN(entry.score.total)) ? entry.score.total : 0;
+                const gradeVal = (entry.score && entry.score.grade) ? entry.score.grade : '--';
+
+                card.innerHTML = 
+                    '<div class="flex justify-between items-center mb-1 text-xs">' +
+                        '<div class="flex items-center overflow-hidden mr-2">' + genreLabel + '<span class="text-slate-400 text-[11px] shrink-0">' + entry.date + '</span></div>' +
+                        '<div class="flex items-center gap-1.5 shrink-0">' +
+                            (entry.aiFeedback ? '<span class="text-[10px] bg-red-50 text-red-600 px-1 rounded font-medium">AI 評語</span>' : '') +
+                            '<span class="font-bold text-red-700 bg-red-50 px-1.5 py-0.5 rounded border border-red-200 text-[11px]">Level ' + gradeVal + '</span>' +
+                            '<span class="font-mono text-slate-500 text-[11px]">' + scoreVal + '/100</span>' +
+                        '</div>' +
+                    '</div>' +
+                    '<h4 class="font-bold text-slate-800 text-xs truncate group-hover:text-red-700 transition-colors">' + (entry.prompt || '無題目') + '</h4>';
+                
+                historyList.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        function updateStats() {
+            if (entries.length === 0) {
+                streakCountDisplay.textContent = 0;
+                return;
+            }
+
+            const uniqueDates = [...new Set(entries.map(e => e.date))].sort().reverse();
+            const today = new Date().toISOString().split('T')[0];
+            const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+
+            let streak = 0;
+            let checkDate = uniqueDates[0] === today ? today : (uniqueDates[0] === yesterday ? yesterday : null);
+
+            if (checkDate) {
+                let currentDate = new Date(checkDate);
+                while (true) {
+                    const dateStr = currentDate.toISOString().split('T')[0];
+                    if (uniqueDates.includes(dateStr)) {
+                        streak++;
+                        currentDate.setDate(currentDate.getDate() - 1);
+                    } else { break; }
+                }
+            }
+            streakCountDisplay.textContent = streak;
+        }
+
+        function openModal(id) {
+            const entry = entries.find(e => e.id === id);
+            if (!entry) return;
+
+            selectedEntryId = id;
+            modalGrade.textContent = "預測等級：Level " + (entry.score ? entry.score.grade : '--');
+            modalDate.textContent = (entry.genre ? "[" + entry.genre + "] " : "") + entry.date + " " + entry.time;
+            modalPrompt.textContent = entry.prompt;
+            modalContent.textContent = entry.content;
+            modalWordCount.textContent = "總字數：" + entry.words + " 字";
+
+            modalScoreC.textContent = entry.score ? entry.score.c : 0;
+            modalScoreE.textContent = entry.score ? entry.score.e : 0;
+            modalScoreS.textContent = entry.score ? entry.score.s : 0;
+            modalScoreP.textContent = entry.score ? (entry.score.p || 8) : 0;
+            modalScoreTotal.textContent = entry.score ? entry.score.total : 0;
+
+            if (entry.aiFeedback) {
+                modalAiFeedback.textContent = entry.aiFeedback;
+                modalAiFeedbackContainer.classList.remove('hidden');
+            } else {
+                modalAiFeedbackContainer.classList.add('hidden');
+            }
+
+            modalView.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            modalView.classList.add('hidden');
+            selectedEntryId = null;
+        }
+
+        function deleteEntry() {
+            if (!selectedEntryId) return;
+            if (confirm("確定要刪除這筆寫作紀錄嗎？")) {
+                entries = entries.filter(e => e.id !== selectedEntryId);
+                localStorage.setItem('hkdse_chi_micro_entries', JSON.stringify(entries));
+                renderHistory();
+                updateStats();
+                closeModal();
+            }
+        }
+
+        btnNewPrompt.addEventListener('click', getAiGeneratedPrompt);
+        btnToggleTimer.addEventListener('click', toggleTimer);
+        btnSave.addEventListener('click', saveEntry);
+        btnAiGrade.addEventListener('click', runOpenRouterGrading);
+        btnAiSample.addEventListener('click', generateSampleEssay);
+
+        btnCloseModal.addEventListener('click', closeModal);
+        btnDeleteEntry.addEventListener('click', deleteEntry);
+
+        btnCloseSampleModal.addEventListener('click', () => {
+            modalSampleEssay.classList.add('hidden');
+        });
+
+        btnCopySample.addEventListener('click', () => {
+            const textToCopy = sampleEssayContent.textContent;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                alert("5** 範文已成功複製到剪貼簿！");
+            }).catch(err => {
+                console.error("複製失敗:", err);
+            });
+        });
+
+        btnApiKey.addEventListener('click', () => {
+            selectApiProvider.value = preferredApiProvider;
+            inputApiKey.value = openrouterApiKey;
+            inputMistralKey.value = mistralApiKey;
+            modalApi.classList.remove('hidden');
+        });
+        btnCloseApi.addEventListener('click', () => modalApi.classList.add('hidden'));
+        btnSaveApi.addEventListener('click', () => {
+            preferredApiProvider = selectApiProvider.value;
+            openrouterApiKey = inputApiKey.value.trim();
+            mistralApiKey = inputMistralKey.value.trim();
+            localStorage.setItem('preferred_api_provider', preferredApiProvider);
+            localStorage.setItem('openrouter_api_key', openrouterApiKey);
+            localStorage.setItem('mistral_api_key', mistralApiKey);
+            updateApiKeyUI();
+            modalApi.classList.add('hidden');
+            getAiGeneratedPrompt();
+            alert("API 設定與服務商已成功儲存！");
+        });
+
+        modalView.addEventListener('click', (e) => {
+            if (e.target === modalView) closeModal();
+        });
+
+        modalSampleEssay.addEventListener('click', (e) => {
+            if (e.target === modalSampleEssay) modalSampleEssay.classList.add('hidden');
+        });
+
+        init();
+    </script>
+</body>
+</html>
